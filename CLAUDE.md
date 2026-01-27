@@ -14,14 +14,15 @@ Aplicación web para separar sistemas musicales en partituras PDF y añadir espa
 ```
 ScoreSpacer/
 ├── index.html          # Página principal con UI
-├── style.css           # Estilos (tema oscuro)
+├── style.css           # Estilos (tema claro minimalista)
 ├── CLAUDE.md           # Este archivo
 ├── .nojekyll           # Para GitHub Pages
 └── js/
     ├── main.js         # Lógica principal, UI y edición interactiva
     ├── pdfHandler.js   # Carga y renderizado de PDF con PDF.js
     ├── projection.js   # Algoritmo de perfil de proyección horizontal
-    └── pdfGenerator.js # Generación de PDF A4 con pdf-lib
+    ├── pdfGenerator.js # Generación de PDF A4 con pdf-lib
+    └── i18n.js         # Sistema de internacionalización (ES/CA/EN)
 ```
 
 ## Algoritmo de Detección de Sistemas (Híbrido)
@@ -163,3 +164,70 @@ Después del análisis, aparece un botón "Recortar" que permite ajustar los má
 - Eliminar márgenes excesivos de páginas escaneadas
 - Recortar encabezados o pies de página no deseados
 - Añadir margen extra si el contenido está demasiado cerca del borde
+
+## Internacionalización (i18n)
+
+La aplicación soporta **tres idiomas**: Español (es), Català (ca), English (en).
+
+### Idiomas Soportados
+
+| Código | Idioma | Descripción |
+|--------|--------|-------------|
+| `es` | Español | Idioma por defecto si no se detecta otro |
+| `ca` | Català | Catalán |
+| `en` | English | Inglés |
+
+### Detección Automática
+
+El idioma se detecta automáticamente en este orden:
+1. **localStorage**: si el usuario ya eligió un idioma, se recuerda
+2. **navigator.language**: idioma del navegador/SO
+3. **Fallback**: español si el idioma detectado no está soportado
+
+### Selector de Idioma
+
+En el footer hay un selector discreto (ES/CA/EN) que permite cambiar el idioma manualmente. La preferencia se guarda en localStorage.
+
+### Sistema de Traducciones
+
+Las traducciones están en `js/i18n.js`:
+
+```javascript
+// Usar una traducción
+import { i18n } from './i18n.js';
+
+// Texto simple
+i18n.t('preview.analyze') // "Analizar PDF"
+
+// Con interpolación
+i18n.t('preview.pageIndicator', { current: 1, total: 5 }) // "Página 1 de 5"
+
+// Cambiar idioma
+i18n.setLanguage('en');
+
+// Escuchar cambios
+i18n.onLanguageChange((lang) => { /* actualizar UI */ });
+```
+
+### Añadir Traducciones en HTML
+
+Usar atributos `data-i18n`:
+
+```html
+<!-- Texto contenido -->
+<p data-i18n="preview.title">Vista previa</p>
+
+<!-- Atributo title -->
+<button data-i18n-title="system.delete" title="Eliminar">×</button>
+
+<!-- Atributo placeholder -->
+<input data-i18n-placeholder="search.placeholder">
+```
+
+### IMPORTANTE para Desarrollo
+
+**Al añadir nuevos textos visibles al usuario:**
+1. Añadir la clave en los tres idiomas en `js/i18n.js`
+2. Usar `data-i18n` en HTML para textos estáticos
+3. Usar `i18n.t('clave')` en JavaScript para textos dinámicos
+4. Mantener consistencia en las claves (ej: `section.element.action`)

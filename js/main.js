@@ -5,6 +5,7 @@
 import { PDFHandler } from './pdfHandler.js';
 import { ProjectionAnalyzer } from './projection.js';
 import { PDFGenerator } from './pdfGenerator.js';
+import { i18n } from './i18n.js';
 
 class ScoreSpacer {
     constructor() {
@@ -86,12 +87,16 @@ class ScoreSpacer {
         // Generate
         this.generateBtn = document.getElementById('generateBtn');
         this.progressBar = document.getElementById('progressBar');
+        this.filenameGroup = document.getElementById('filenameGroup');
+        this.outputFilename = document.getElementById('outputFilename');
 
         // Rotation
         this.rotateBtn = document.getElementById('rotateBtn');
         this.rotationPanel = document.getElementById('rotationPanel');
         this.rotationSlider = document.getElementById('rotationSlider');
         this.rotationInput = document.getElementById('rotationInput');
+        this.rotationAutoDetectBtn = document.getElementById('rotationAutoDetect');
+        this.rotationResetBtn = document.getElementById('rotationReset');
         this.cancelRotationBtn = document.getElementById('cancelRotationBtn');
         this.applyRotationBtn = document.getElementById('applyRotationBtn');
 
@@ -117,6 +122,9 @@ class ScoreSpacer {
         this.helpBtn = document.getElementById('helpBtn');
         this.helpModal = document.getElementById('helpModal');
         this.closeHelpModalBtn = document.getElementById('closeHelpModal');
+
+        // Language selector
+        this.languageSelect = document.getElementById('languageSelect');
     }
 
     initEventListeners() {
@@ -214,6 +222,15 @@ class ScoreSpacer {
             });
         });
 
+        // Rotation auto-detect and reset
+        this.rotationAutoDetectBtn.addEventListener('click', () => this.autoDetectRotation());
+        this.rotationResetBtn.addEventListener('click', () => {
+            this.rotationSlider.value = 0;
+            this.rotationInput.value = 0;
+            this.currentRotation = 0;
+            this.previewRotation(0);
+        });
+
         // Crop controls
         this.cropBtn.addEventListener('click', () => this.enterCropMode());
         this.cancelCropBtn.addEventListener('click', () => this.exitCropMode());
@@ -281,6 +298,20 @@ class ScoreSpacer {
         document.addEventListener('mouseup', (e) => {
             this.handleDragEnd(e);
             this.handleCropDragEnd(e);
+        });
+
+        // Language selector
+        this.languageSelect.value = i18n.getLanguage();
+        this.languageSelect.addEventListener('change', () => {
+            i18n.setLanguage(this.languageSelect.value);
+        });
+
+        // Update dynamic content when language changes
+        i18n.onLanguageChange(() => {
+            if (this.isAnalyzed) {
+                this.showPageAnalysis(this.currentPage);
+            }
+            this.updatePageIndicator();
         });
     }
 
@@ -359,13 +390,13 @@ class ScoreSpacer {
 
         } catch (error) {
             console.error('Error loading PDF:', error);
-            alert('Error al cargar el PDF: ' + error.message);
+            alert(i18n.t('error.loadPdf') + ' ' + error.message);
             this.reset();
         }
     }
 
     async generateThumbnails() {
-        this.pageThumbnails.innerHTML = '<p style="color: var(--text-secondary);">Generando miniaturas...</p>';
+        this.pageThumbnails.innerHTML = `<p style="color: var(--text-secondary);">${i18n.t('thumbnail.generating')}</p>`;
 
         const pageCount = this.pdfHandler.getPageCount();
         const fragment = document.createDocumentFragment();
@@ -396,7 +427,7 @@ class ScoreSpacer {
         const img = document.createElement('img');
         img.className = 'page-thumbnail-image';
         img.src = canvas.toDataURL('image/jpeg', 0.7);
-        img.alt = `Página ${pageNum}`;
+        img.alt = i18n.t('thumbnail.page', { num: pageNum });
         div.appendChild(img);
 
         // Overlay with controls (visible on hover)
@@ -409,7 +440,7 @@ class ScoreSpacer {
         // Detect button
         const detectBtn = document.createElement('button');
         detectBtn.className = `page-thumbnail-btn ${settings.detect ? 'active' : ''}`;
-        detectBtn.textContent = settings.detect ? '✓ Detectar' : 'Detectar';
+        detectBtn.textContent = settings.detect ? i18n.t('thumbnail.detectActive') : i18n.t('thumbnail.detect');
         detectBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.togglePageSetting(index, 'detect');
@@ -419,7 +450,7 @@ class ScoreSpacer {
         // Export button
         const exportBtn = document.createElement('button');
         exportBtn.className = `page-thumbnail-btn ${settings.export ? 'active' : ''}`;
-        exportBtn.textContent = settings.export ? '✓ Exportar' : 'Exportar';
+        exportBtn.textContent = settings.export ? i18n.t('thumbnail.exportActive') : i18n.t('thumbnail.export');
         exportBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.togglePageSetting(index, 'export');
@@ -445,7 +476,7 @@ class ScoreSpacer {
             const detectBadge = document.createElement('span');
             detectBadge.className = 'page-badge detect';
             detectBadge.textContent = 'D';
-            detectBadge.title = 'Detectar sistemas';
+            detectBadge.title = i18n.t('thumbnail.badgeDetect');
             badges.appendChild(detectBadge);
         }
 
@@ -453,7 +484,7 @@ class ScoreSpacer {
             const exportBadge = document.createElement('span');
             exportBadge.className = 'page-badge export';
             exportBadge.textContent = 'E';
-            exportBadge.title = 'Incluir en exportación';
+            exportBadge.title = i18n.t('thumbnail.badgeExport');
             badges.appendChild(exportBadge);
         }
 
@@ -510,9 +541,9 @@ class ScoreSpacer {
         // Update buttons
         const buttons = thumbnail.querySelectorAll('.page-thumbnail-btn');
         buttons[0].className = `page-thumbnail-btn ${settings.detect ? 'active' : ''}`;
-        buttons[0].textContent = settings.detect ? '✓ Detectar' : 'Detectar';
+        buttons[0].textContent = settings.detect ? i18n.t('thumbnail.detectActive') : i18n.t('thumbnail.detect');
         buttons[1].className = `page-thumbnail-btn ${settings.export ? 'active' : ''}`;
-        buttons[1].textContent = settings.export ? '✓ Exportar' : 'Exportar';
+        buttons[1].textContent = settings.export ? i18n.t('thumbnail.exportActive') : i18n.t('thumbnail.export');
 
         // Update badges
         const badges = thumbnail.querySelector('.page-thumbnail-badges');
@@ -522,7 +553,7 @@ class ScoreSpacer {
             const detectBadge = document.createElement('span');
             detectBadge.className = 'page-badge detect';
             detectBadge.textContent = 'D';
-            detectBadge.title = 'Detectar sistemas';
+            detectBadge.title = i18n.t('thumbnail.badgeDetect');
             badges.appendChild(detectBadge);
         }
 
@@ -530,7 +561,7 @@ class ScoreSpacer {
             const exportBadge = document.createElement('span');
             exportBadge.className = 'page-badge export';
             exportBadge.textContent = 'E';
-            exportBadge.title = 'Incluir en exportación';
+            exportBadge.title = i18n.t('thumbnail.badgeExport');
             badges.appendChild(exportBadge);
         }
     }
@@ -565,7 +596,7 @@ class ScoreSpacer {
 
         this.previewContainer.innerHTML = `
             <div class="preview-placeholder">
-                <p>Haz clic en "Analizar PDF" para ver la detección de sistemas</p>
+                <p>${i18n.t('preview.placeholder')}</p>
             </div>
         `;
     }
@@ -589,14 +620,16 @@ class ScoreSpacer {
         const total = this.pdfHandler.getPageCount();
         const settings = this.pageSettings[this.currentPage - 1];
         let status = '';
-        if (settings.detect) {
-            status = ' (detectar)';
-        } else if (settings.export) {
-            status = ' (solo exportar)';
-        } else {
-            status = ' (omitir)';
+        if (settings) {
+            if (settings.detect) {
+                status = ' ' + i18n.t('preview.statusDetect');
+            } else if (settings.export) {
+                status = ' ' + i18n.t('preview.statusExportOnly');
+            } else {
+                status = ' ' + i18n.t('preview.statusSkip');
+            }
         }
-        this.pageIndicator.textContent = `Página ${this.currentPage} de ${total}${status}`;
+        this.pageIndicator.textContent = i18n.t('preview.pageIndicator', { current: this.currentPage, total: total }) + status;
         this.prevPageBtn.disabled = this.currentPage <= 1;
         this.nextPageBtn.disabled = this.currentPage >= total;
     }
@@ -617,7 +650,7 @@ class ScoreSpacer {
     async analyzeAllPages() {
         this.syncParams();
         this.analyzeBtn.disabled = true;
-        this.analyzeBtn.innerHTML = '<span class="loading"></span>Analizando...';
+        this.analyzeBtn.innerHTML = `<span class="loading"></span>${i18n.t('preview.analyzing')}`;
 
         try {
             const pageCount = this.pdfHandler.getPageCount();
@@ -661,12 +694,17 @@ class ScoreSpacer {
             this.showPageAnalysis(this.currentPage);
             this.pageNav.classList.remove('hidden');
 
+            // Show filename input with default value
+            this.filenameGroup.classList.remove('hidden');
+            const originalName = this.fileName.textContent.replace('.pdf', '');
+            this.outputFilename.value = `${originalName}_spaced`;
+
         } catch (error) {
             console.error('Error analyzing PDF:', error);
-            alert('Error al analizar: ' + error.message);
+            alert(i18n.t('error.analyze') + ' ' + error.message);
         } finally {
             this.analyzeBtn.disabled = false;
-            this.analyzeBtn.textContent = 'Analizar PDF';
+            this.analyzeBtn.textContent = i18n.t('preview.analyze');
         }
     }
 
@@ -754,8 +792,8 @@ class ScoreSpacer {
             // Add "Add System" button
             const addBtn = document.createElement('button');
             addBtn.className = 'btn-add-system';
-            addBtn.innerHTML = '+ Añadir sistema';
-            addBtn.title = 'Añadir un nuevo sistema manualmente';
+            addBtn.innerHTML = i18n.t('system.add');
+            addBtn.title = i18n.t('system.addTitle');
             addBtn.addEventListener('click', () => this.addNewSystem());
             wrapper.appendChild(addBtn);
         }
@@ -769,11 +807,12 @@ class ScoreSpacer {
         info.style.cssText = 'text-align: center; color: var(--text-secondary); margin-top: 1rem;';
 
         if (skipped && !settings.export) {
-            info.textContent = 'Página omitida (no se detecta ni exporta)';
+            info.textContent = i18n.t('preview.pageSkipped');
         } else if (skipped && settings.export) {
-            info.textContent = 'Página sin detección (se exportará tal cual)';
+            info.textContent = i18n.t('preview.pageExportOnly');
         } else {
-            info.innerHTML = `${systems.length} sistema${systems.length !== 1 ? 's' : ''} detectado${systems.length !== 1 ? 's' : ''} - <span style="color: var(--accent);">Arrastra los bordes para ajustar</span>`;
+            const plural = systems.length !== 1 ? 's' : '';
+            info.innerHTML = `${i18n.t('preview.systemsDetected', { count: systems.length, plural: plural })} - <span style="color: var(--accent);">${i18n.t('preview.dragToAdjust')}</span>`;
         }
         this.previewContainer.appendChild(info);
     }
@@ -811,7 +850,7 @@ class ScoreSpacer {
         const splitBtn = document.createElement('button');
         splitBtn.className = 'system-action-btn';
         splitBtn.innerHTML = '✂';
-        splitBtn.title = 'Dividir sistema en dos';
+        splitBtn.title = i18n.t('system.split');
         splitBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.splitSystem(index);
@@ -822,7 +861,7 @@ class ScoreSpacer {
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'system-action-btn system-action-delete';
         deleteBtn.innerHTML = '×';
-        deleteBtn.title = 'Eliminar sistema';
+        deleteBtn.title = i18n.t('system.delete');
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.deleteSystem(index);
@@ -1095,6 +1134,147 @@ class ScoreSpacer {
         return rotatedCanvas;
     }
 
+    /**
+     * Auto-detect the optimal rotation angle by finding the angle that
+     * maximizes the variance of horizontal projection (staff lines create
+     * strong peaks when perfectly horizontal)
+     */
+    autoDetectRotation() {
+        if (!this.isRotationMode || !this.originalCanvas) return;
+
+        this.rotationAutoDetectBtn.disabled = true;
+        this.rotationAutoDetectBtn.textContent = i18n.t('rotation.detecting');
+
+        // Use setTimeout to allow UI to update
+        setTimeout(() => {
+            try {
+                const canvas = this.originalCanvas;
+
+                // Scale down for faster processing
+                const scale = Math.min(1, 800 / Math.max(canvas.width, canvas.height));
+                const sampleCanvas = document.createElement('canvas');
+                sampleCanvas.width = Math.floor(canvas.width * scale);
+                sampleCanvas.height = Math.floor(canvas.height * scale);
+                const sampleCtx = sampleCanvas.getContext('2d');
+                sampleCtx.drawImage(canvas, 0, 0, sampleCanvas.width, sampleCanvas.height);
+
+                // Convert to grayscale array for faster processing
+                const imageData = sampleCtx.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height);
+                const data = imageData.data;
+                const width = sampleCanvas.width;
+                const height = sampleCanvas.height;
+
+                let bestAngle = 0;
+                let bestVariance = 0;
+
+                // Test angles from -3 to 3 degrees in 0.1 degree steps
+                for (let angle = -3; angle <= 3; angle += 0.1) {
+                    const variance = this.calculateProjectionVariance(data, width, height, angle);
+                    if (variance > bestVariance) {
+                        bestVariance = variance;
+                        bestAngle = angle;
+                    }
+                }
+
+                // Fine-tune around best angle with 0.05 degree steps
+                const fineStart = bestAngle - 0.2;
+                const fineEnd = bestAngle + 0.2;
+                for (let angle = fineStart; angle <= fineEnd; angle += 0.05) {
+                    const variance = this.calculateProjectionVariance(data, width, height, angle);
+                    if (variance > bestVariance) {
+                        bestVariance = variance;
+                        bestAngle = angle;
+                    }
+                }
+
+                // Round to 1 decimal place
+                bestAngle = Math.round(bestAngle * 10) / 10;
+
+                // Apply the detected angle
+                this.currentRotation = bestAngle;
+                this.rotationSlider.value = bestAngle;
+                this.rotationInput.value = bestAngle;
+                this.previewRotation(bestAngle);
+
+            } catch (error) {
+                console.error('Error auto-detecting rotation:', error);
+            } finally {
+                this.rotationAutoDetectBtn.disabled = false;
+                this.rotationAutoDetectBtn.textContent = i18n.t('rotation.autoDetect');
+            }
+        }, 50);
+    }
+
+    /**
+     * Calculate the variance of horizontal projection for a given rotation angle
+     * Higher variance means better alignment of horizontal lines
+     */
+    calculateProjectionVariance(data, width, height, angleDegrees) {
+        const angleRadians = (angleDegrees * Math.PI) / 180;
+        const cos = Math.cos(angleRadians);
+        const sin = Math.sin(angleRadians);
+
+        // Center of the image
+        const cx = width / 2;
+        const cy = height / 2;
+
+        // Create projection array
+        const projection = new Array(height).fill(0);
+        const counts = new Array(height).fill(0);
+
+        // Sample pixels (skip some for speed)
+        const step = 2;
+        for (let y = 0; y < height; y += step) {
+            for (let x = 0; x < width; x += step) {
+                // Rotate point around center
+                const rx = (x - cx) * cos - (y - cy) * sin + cx;
+                const ry = (x - cx) * sin + (y - cy) * cos + cy;
+
+                // Get original pixel
+                const idx = (y * width + x) * 4;
+                const gray = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+
+                // Invert (dark pixels = high value)
+                const darkness = 255 - gray;
+
+                // Add to projection at rotated Y position
+                const projY = Math.floor(ry);
+                if (projY >= 0 && projY < height) {
+                    projection[projY] += darkness;
+                    counts[projY]++;
+                }
+            }
+        }
+
+        // Normalize projection
+        for (let i = 0; i < height; i++) {
+            if (counts[i] > 0) {
+                projection[i] /= counts[i];
+            }
+        }
+
+        // Calculate variance
+        let sum = 0;
+        let count = 0;
+        for (let i = 0; i < height; i++) {
+            if (counts[i] > 0) {
+                sum += projection[i];
+                count++;
+            }
+        }
+        const mean = sum / count;
+
+        let variance = 0;
+        for (let i = 0; i < height; i++) {
+            if (counts[i] > 0) {
+                variance += Math.pow(projection[i] - mean, 2);
+            }
+        }
+        variance /= count;
+
+        return variance;
+    }
+
     async applyRotation() {
         if (!this.isRotationMode || this.currentRotation === 0) {
             this.exitRotationMode();
@@ -1106,7 +1286,7 @@ class ScoreSpacer {
 
         // Show loading state
         this.applyRotationBtn.disabled = true;
-        this.applyRotationBtn.innerHTML = '<span class="loading"></span>Aplicando...';
+        this.applyRotationBtn.innerHTML = `<span class="loading"></span>${i18n.t('rotation.applying')}`;
 
         try {
             // Rotate the stored canvas
@@ -1139,10 +1319,10 @@ class ScoreSpacer {
 
         } catch (error) {
             console.error('Error applying rotation:', error);
-            alert('Error al aplicar rotación: ' + error.message);
+            alert(i18n.t('error.rotation') + ' ' + error.message);
         } finally {
             this.applyRotationBtn.disabled = false;
-            this.applyRotationBtn.textContent = 'Aplicar y re-analizar';
+            this.applyRotationBtn.textContent = i18n.t('rotation.apply');
         }
     }
 
@@ -1362,7 +1542,7 @@ class ScoreSpacer {
         const newHeight = sourceCanvas.height - top - bottom;
 
         if (newWidth <= 0 || newHeight <= 0) {
-            throw new Error('Los valores de recorte resultan en un tamaño inválido');
+            throw new Error(i18n.t('crop.invalidSize'));
         }
 
         const croppedCanvas = document.createElement('canvas');
@@ -1414,7 +1594,7 @@ class ScoreSpacer {
 
         // Show loading state
         this.applyCropBtn.disabled = true;
-        this.applyCropBtn.innerHTML = '<span class="loading"></span>Aplicando...';
+        this.applyCropBtn.innerHTML = `<span class="loading"></span>${i18n.t('crop.applying')}`;
 
         try {
             // Crop the stored canvas
@@ -1447,10 +1627,10 @@ class ScoreSpacer {
 
         } catch (error) {
             console.error('Error applying crop:', error);
-            alert('Error al aplicar recorte: ' + error.message);
+            alert(i18n.t('error.crop') + ' ' + error.message);
         } finally {
             this.applyCropBtn.disabled = false;
-            this.applyCropBtn.textContent = 'Aplicar y re-analizar';
+            this.applyCropBtn.textContent = i18n.t('crop.apply');
         }
     }
 
@@ -1519,7 +1699,7 @@ class ScoreSpacer {
             });
 
             if (pagesToExport.length === 0) {
-                alert('No hay páginas seleccionadas para exportar');
+                alert(i18n.t('generate.noPages'));
                 return;
             }
 
@@ -1527,21 +1707,21 @@ class ScoreSpacer {
                 pagesToExport,
                 (progress) => {
                     progressBarEl.style.setProperty('--progress', `${progress}%`);
-                    progressText.textContent = `Procesando... ${progress}%`;
+                    progressText.textContent = `${i18n.t('generate.processing')} ${progress}%`;
                 }
             );
 
-            // Generate filename
-            const originalName = this.fileName.textContent.replace('.pdf', '');
-            const newFilename = `${originalName}_spaced.pdf`;
+            // Generate filename from user input
+            const customName = this.outputFilename.value.trim() || 'output';
+            const newFilename = `${customName}.pdf`;
 
             this.generator.downloadPdf(pdfBytes, newFilename);
 
-            progressText.textContent = 'PDF generado correctamente';
+            progressText.textContent = i18n.t('generate.success');
 
         } catch (error) {
             console.error('Error generating PDF:', error);
-            alert('Error al generar PDF: ' + error.message);
+            alert(i18n.t('error.generate') + ' ' + error.message);
         } finally {
             this.generateBtn.disabled = false;
             setTimeout(() => {
@@ -1576,12 +1756,14 @@ class ScoreSpacer {
         this.cropBtn.classList.add('hidden');
         this.cropPanel.classList.add('hidden');
         this.generateBtn.disabled = true;
+        this.filenameGroup.classList.add('hidden');
+        this.outputFilename.value = '';
 
         this.fileInput.value = '';
         this.pageThumbnails.innerHTML = '';
         this.previewContainer.innerHTML = `
             <div class="preview-placeholder">
-                <p>Haz clic en "Analizar PDF" para ver la detección de sistemas</p>
+                <p>${i18n.t('preview.placeholder')}</p>
             </div>
         `;
     }
@@ -1589,5 +1771,9 @@ class ScoreSpacer {
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize i18n (update DOM with detected/saved language)
+    i18n.updateDOM();
+
+    // Initialize app
     window.scoreSpacer = new ScoreSpacer();
 });

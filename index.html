@@ -21,15 +21,16 @@
             <div class="header-title">
                 <img src="icon.png" alt="ScoreSpacer" class="app-icon">
                 <h1>ScoreSpacer</h1>
-                <button class="btn-help" id="helpBtn" title="Ayuda">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                        <line x1="12" y1="17" x2="12.01" y2="17"/>
-                    </svg>
-                </button>
+                <button class="btn-help" id="helpBtn" title="Ayuda">?</button>
+                <div class="language-selector-header">
+                    <select id="languageSelect" title="Language">
+                        <option value="es">ES</option>
+                        <option value="ca">CA</option>
+                        <option value="en">EN</option>
+                    </select>
+                </div>
             </div>
-            <p class="subtitle">Añade espacio entre sistemas musicales para anotaciones</p>
+            <p class="subtitle" data-i18n="header.subtitle">Añade espacio entre sistemas musicales para anotaciones</p>
         </header>
 
         <main>
@@ -43,12 +44,12 @@
                             <polyline points="17 8 12 3 7 8"/>
                             <line x1="12" y1="3" x2="12" y2="15"/>
                         </svg>
-                        <p>Arrastra un PDF aquí o <button class="link-btn" id="selectFileBtn">selecciona un archivo</button></p>
+                        <p><span data-i18n="upload.dropzone">Arrastra un PDF aquí o</span> <button class="link-btn" id="selectFileBtn" data-i18n="upload.selectFile">selecciona un archivo</button></p>
                     </div>
                 </div>
                 <div class="disclaimer">
-                    <p><strong>Aviso legal:</strong> Al utilizar esta aplicación, el usuario declara y garantiza que posee los derechos de autor o cuenta con la autorización expresa del titular de los derechos sobre los documentos que sube, o bien que dichos documentos se encuentran en dominio público o están publicados bajo licencias que permiten su reproducción y modificación (como Creative Commons).</p>
-                    <p>ScoreSpacer y su creador no asumen responsabilidad alguna por el uso indebido, no autorizado o fraudulento de esta herramienta. El usuario es el único responsable de verificar que dispone de los permisos necesarios para procesar los documentos y de cumplir con la legislación vigente en materia de propiedad intelectual.</p>
+                    <p><strong data-i18n="upload.disclaimer.title">Aviso legal:</strong> <span data-i18n="upload.disclaimer.p1">Al utilizar esta aplicación, el usuario declara y garantiza que posee los derechos de autor o cuenta con la autorización expresa del titular de los derechos sobre los documentos que sube, o bien que dichos documentos se encuentran en dominio público o están publicados bajo licencias que permiten su reproducción y modificación (como Creative Commons).</span></p>
+                    <p data-i18n="upload.disclaimer.p2">ScoreSpacer y su creador no asumen responsabilidad alguna por el uso indebido, no autorizado o fraudulento de esta herramienta. El usuario es el único responsable de verificar que dispone de los permisos necesarios para procesar los documentos y de cumplir con la legislación vigente en materia de propiedad intelectual.</p>
                 </div>
             </section>
 
@@ -56,16 +57,16 @@
             <section class="page-selection-section hidden" id="pageSelectionSection">
                 <div class="file-info">
                     <span class="file-name" id="fileName"></span>
-                    <button class="btn-icon" id="removeFileBtn" title="Quitar archivo">×</button>
+                    <button class="btn-icon" id="removeFileBtn" data-i18n-title="pageSelection.removeFile" title="Quitar archivo">×</button>
                 </div>
 
                 <div class="page-selection-header">
-                    <h3>Selección de páginas</h3>
-                    <p class="page-selection-help">Haz clic en las páginas para configurar detección y exportación</p>
+                    <h3 data-i18n="pageSelection.title">Selección de páginas</h3>
+                    <p class="page-selection-help" data-i18n="pageSelection.help">Haz clic en las páginas para configurar detección y exportación</p>
                     <div class="page-selection-actions">
-                        <button class="btn btn-secondary btn-small" id="selectAllDetect">Detectar todas</button>
-                        <button class="btn btn-secondary btn-small" id="selectNoneDetect">No detectar ninguna</button>
-                        <button class="btn btn-secondary btn-small" id="selectAllExport">Exportar todas</button>
+                        <button class="btn btn-secondary btn-small" id="selectAllDetect" data-i18n="pageSelection.detectAll">Detectar todas</button>
+                        <button class="btn btn-secondary btn-small" id="selectNoneDetect" data-i18n="pageSelection.detectNone">No detectar ninguna</button>
+                        <button class="btn btn-secondary btn-small" id="selectAllExport" data-i18n="pageSelection.exportAll">Exportar todas</button>
                     </div>
                 </div>
 
@@ -74,28 +75,28 @@
                 </div>
 
                 <div class="page-selection-legend">
-                    <span class="legend-item"><span class="legend-color legend-detect"></span> Detectar sistemas</span>
-                    <span class="legend-item"><span class="legend-color legend-export"></span> Incluir en exportación</span>
-                    <span class="legend-item"><span class="legend-color legend-skip"></span> Omitir</span>
+                    <span class="legend-item"><span class="legend-color legend-detect"></span> <span data-i18n="pageSelection.legend.detect">Detectar sistemas</span></span>
+                    <span class="legend-item"><span class="legend-color legend-export"></span> <span data-i18n="pageSelection.legend.export">Incluir en exportación</span></span>
+                    <span class="legend-item"><span class="legend-color legend-skip"></span> <span data-i18n="pageSelection.legend.skip">Omitir</span></span>
                 </div>
 
                 <div class="page-selection-continue">
-                    <button class="btn btn-primary" id="continueToProcessBtn">Continuar con el procesamiento</button>
+                    <button class="btn btn-primary" id="continueToProcessBtn" data-i18n="pageSelection.continue">Continuar con el procesamiento</button>
                 </div>
             </section>
 
             <!-- Processing Section -->
             <section class="processing-section hidden" id="processingSection">
                 <div class="section-nav">
-                    <button class="btn btn-secondary btn-small" id="backToSelectionBtn">← Volver a selección</button>
+                    <button class="btn btn-secondary btn-small" id="backToSelectionBtn" data-i18n="processing.backToSelection">← Volver a selección</button>
                 </div>
 
                 <!-- Parameters -->
                 <div class="parameters">
-                    <h3>Parámetros de detección</h3>
+                    <h3 data-i18n="processing.parameters.title">Parámetros de detección</h3>
 
                     <div class="param-group">
-                        <label for="spacingInput">Espacio entre sistemas (px)</label>
+                        <label for="spacingInput" data-i18n="processing.parameters.spacing">Espacio entre sistemas (px)</label>
                         <div class="param-control">
                             <input type="range" id="spacingSlider" min="50" max="500" value="150">
                             <input type="number" id="spacingInput" min="50" max="500" value="150">
@@ -103,16 +104,16 @@
                     </div>
 
                     <div class="param-group">
-                        <label for="thresholdInput">Umbral de detección (%)</label>
+                        <label for="thresholdInput" data-i18n="processing.parameters.threshold">Umbral de detección (%)</label>
                         <div class="param-control">
                             <input type="range" id="thresholdSlider" min="1" max="20" value="5">
                             <input type="number" id="thresholdInput" min="1" max="20" value="5">
                         </div>
-                        <small>Porcentaje mínimo de píxeles oscuros para considerar una línea como parte de un sistema</small>
+                        <small data-i18n="processing.parameters.thresholdHelp">Porcentaje mínimo de píxeles oscuros para considerar una línea como parte de un sistema</small>
                     </div>
 
                     <div class="param-group">
-                        <label for="minGapInput">Separación mínima entre sistemas (px)</label>
+                        <label for="minGapInput" data-i18n="processing.parameters.minGap">Separación mínima entre sistemas (px)</label>
                         <div class="param-control">
                             <input type="range" id="minGapSlider" min="10" max="100" value="30">
                             <input type="number" id="minGapInput" min="10" max="100" value="30">
@@ -122,17 +123,17 @@
                     <div class="param-group param-watermark">
                         <label>
                             <input type="checkbox" id="disableWatermark">
-                            Ocultar marca de agua
+                            <span data-i18n="processing.parameters.watermark">Ocultar marca de agua</span>
                         </label>
-                        <small>Por defecto se añade "ScoreSpacer (www.jlmirall.es)" en cada página</small>
+                        <small data-i18n="processing.parameters.watermarkHelp">Por defecto se añade "ScoreSpacer (www.jlmirall.es)" en cada página</small>
                     </div>
                 </div>
 
                 <!-- Preview -->
                 <div class="preview-section">
-                    <h3>Vista previa de detección</h3>
+                    <h3 data-i18n="preview.title">Vista previa de detección</h3>
                     <div class="preview-controls">
-                        <button class="btn btn-secondary" id="analyzeBtn">Analizar PDF</button>
+                        <button class="btn btn-secondary" id="analyzeBtn" data-i18n="preview.analyze">Analizar PDF</button>
                         <div class="page-nav hidden" id="pageNav">
                             <button class="btn-icon" id="prevPageBtn">←</button>
                             <span id="pageIndicator">Página 1 de 1</span>
@@ -142,21 +143,21 @@
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
                                 <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
                             </svg>
-                            Rotar
+                            <span data-i18n="preview.rotate">Rotar</span>
                         </button>
                         <button class="btn btn-secondary hidden" id="cropBtn" title="Recortar/ajustar márgenes">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
                                 <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
                             </svg>
-                            Recortar
+                            <span data-i18n="preview.crop">Recortar</span>
                         </button>
                     </div>
 
                     <!-- Rotation Panel -->
                     <div class="rotation-panel hidden" id="rotationPanel">
                         <div class="rotation-header">
-                            <h4>Rotación manual</h4>
-                            <p>Usa las líneas rojas como guía para alinear los pentagramas</p>
+                            <h4 data-i18n="rotation.title">Rotación manual</h4>
+                            <p data-i18n="rotation.help">Usa las líneas rojas como guía para alinear los pentagramas</p>
                         </div>
                         <div class="rotation-controls">
                             <button class="btn-icon rotation-preset" data-angle="-2" title="-2°">-2°</button>
@@ -169,22 +170,26 @@
                             <button class="btn-icon rotation-preset" data-angle="1" title="+1°">+1°</button>
                             <button class="btn-icon rotation-preset" data-angle="2" title="+2°">+2°</button>
                         </div>
+                        <div class="rotation-quick-actions">
+                            <button class="btn btn-secondary btn-small" id="rotationAutoDetect" data-i18n="rotation.autoDetect">Auto-detectar rotación</button>
+                            <button class="btn btn-secondary btn-small" id="rotationReset" data-i18n="rotation.reset">Reiniciar</button>
+                        </div>
                         <div class="rotation-actions">
-                            <button class="btn btn-secondary" id="cancelRotationBtn">Cancelar</button>
-                            <button class="btn btn-primary" id="applyRotationBtn">Aplicar y re-analizar</button>
+                            <button class="btn btn-secondary" id="cancelRotationBtn" data-i18n="rotation.cancel">Cancelar</button>
+                            <button class="btn btn-primary" id="applyRotationBtn" data-i18n="rotation.apply">Aplicar y re-analizar</button>
                         </div>
                     </div>
 
                     <!-- Crop Panel -->
                     <div class="crop-panel hidden" id="cropPanel">
                         <div class="crop-header">
-                            <h4>Recortar/Ajustar márgenes</h4>
-                            <p>Valores positivos recortan, negativos añaden margen</p>
+                            <h4 data-i18n="crop.title">Recortar/Ajustar márgenes</h4>
+                            <p data-i18n="crop.help">Valores positivos recortan, negativos añaden margen</p>
                         </div>
                         <div class="crop-controls">
                             <div class="crop-grid">
                                 <div class="crop-control crop-top">
-                                    <label>Arriba</label>
+                                    <label data-i18n="crop.top">Arriba</label>
                                     <div class="crop-input-group">
                                         <button class="btn-icon crop-preset" data-side="top" data-value="-50">-50</button>
                                         <input type="number" id="cropTop" value="0" step="10">
@@ -192,7 +197,7 @@
                                     </div>
                                 </div>
                                 <div class="crop-control crop-left">
-                                    <label>Izquierda</label>
+                                    <label data-i18n="crop.left">Izquierda</label>
                                     <div class="crop-input-group">
                                         <button class="btn-icon crop-preset" data-side="left" data-value="-50">-50</button>
                                         <input type="number" id="cropLeft" value="0" step="10">
@@ -200,7 +205,7 @@
                                     </div>
                                 </div>
                                 <div class="crop-control crop-right">
-                                    <label>Derecha</label>
+                                    <label data-i18n="crop.right">Derecha</label>
                                     <div class="crop-input-group">
                                         <button class="btn-icon crop-preset" data-side="right" data-value="-50">-50</button>
                                         <input type="number" id="cropRight" value="0" step="10">
@@ -208,7 +213,7 @@
                                     </div>
                                 </div>
                                 <div class="crop-control crop-bottom">
-                                    <label>Abajo</label>
+                                    <label data-i18n="crop.bottom">Abajo</label>
                                     <div class="crop-input-group">
                                         <button class="btn-icon crop-preset" data-side="bottom" data-value="-50">-50</button>
                                         <input type="number" id="cropBottom" value="0" step="10">
@@ -217,49 +222,56 @@
                                 </div>
                             </div>
                             <div class="crop-quick-actions">
-                                <button class="btn btn-secondary btn-small" id="cropAutoDetect">Auto-detectar márgenes</button>
-                                <button class="btn btn-secondary btn-small" id="cropReset">Reiniciar</button>
+                                <button class="btn btn-secondary btn-small" id="cropAutoDetect" data-i18n="crop.autoDetect">Auto-detectar márgenes</button>
+                                <button class="btn btn-secondary btn-small" id="cropReset" data-i18n="crop.reset">Reiniciar</button>
                             </div>
                         </div>
                         <div class="crop-actions">
-                            <button class="btn btn-secondary" id="cancelCropBtn">Cancelar</button>
-                            <button class="btn btn-primary" id="applyCropBtn">Aplicar y re-analizar</button>
+                            <button class="btn btn-secondary" id="cancelCropBtn" data-i18n="crop.cancel">Cancelar</button>
+                            <button class="btn btn-primary" id="applyCropBtn" data-i18n="crop.apply">Aplicar y re-analizar</button>
                         </div>
                     </div>
                     <div class="preview-container" id="previewContainer">
                         <div class="preview-placeholder">
-                            <p>Haz clic en "Analizar PDF" para ver la detección de sistemas</p>
+                            <p data-i18n="preview.placeholder">Haz clic en "Analizar PDF" para ver la detección de sistemas</p>
                         </div>
                     </div>
                     <div class="projection-container hidden" id="projectionContainer">
-                        <h4>Perfil de proyección horizontal</h4>
+                        <h4 data-i18n="preview.projectionTitle">Perfil de proyección horizontal</h4>
                         <canvas id="projectionCanvas"></canvas>
                     </div>
                 </div>
 
                 <!-- Generate -->
                 <div class="generate-section">
-                    <button class="btn btn-primary" id="generateBtn" disabled>Generar PDF con espaciado</button>
+                    <div class="filename-input-group hidden" id="filenameGroup">
+                        <label for="outputFilename" data-i18n="generate.filename">Nombre del archivo:</label>
+                        <div class="filename-input-wrapper">
+                            <input type="text" id="outputFilename" class="filename-input" value="">
+                            <span class="filename-extension">.pdf</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="generateBtn" disabled data-i18n="generate.button">Generar PDF con espaciado</button>
                     <div class="progress hidden" id="progressBar">
                         <div class="progress-bar"></div>
-                        <span class="progress-text">Procesando...</span>
+                        <span class="progress-text" data-i18n="generate.processing">Procesando...</span>
                     </div>
                 </div>
             </section>
         </main>
 
         <footer>
-            <p class="footer-main">ScoreSpacer - Procesamiento 100% en navegador</p>
+            <p class="footer-main" data-i18n="footer.main">ScoreSpacer - Procesamiento 100% en navegador</p>
             <p class="footer-credits">
-                Creado por <a href="https://www.jlmirall.es" target="_blank" rel="noopener">José Luis Miralles Bono</a>
-                con ayuda de <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>
+                <span data-i18n="footer.createdBy">Creado por</span> <a href="https://www.jlmirall.es" target="_blank" rel="noopener">José Luis Miralles Bono</a>
+                <span data-i18n="footer.withHelpOf">con ayuda de</span> <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>
             </p>
             <p class="footer-support">
                 <a href="https://ko-fi.com/miralles" target="_blank" rel="noopener" class="kofi-link">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 4px;">
                         <path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734 4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09-.443-.441-3.368-3.049-4.034-3.954-.709-.965-1.041-2.7-.091-3.71.951-1.01 3.005-1.086 4.363.407 0 0 1.565-1.782 3.468-.963 1.904.82 1.832 3.011.723 4.311zm6.173.478c-.928.116-1.682.028-1.682.028V7.284h1.77s1.971.551 1.971 2.638c0 1.913-.985 2.667-2.059 3.015z"/>
                     </svg>
-                    Invítame a una horchata
+                    <span data-i18n="footer.support">Invítame a una horchata</span>
                 </a>
             </p>
         </footer>
@@ -277,17 +289,17 @@
                     <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                 </svg>
             </div>
-            <h3>¡Gracias por usar ScoreSpacer!</h3>
-            <p>Si esta herramienta te resulta útil, considera apoyar su desarrollo con una pequeña donación.</p>
-            <p class="modal-note">Tu apoyo ayuda a mantener y mejorar esta herramienta gratuita.</p>
+            <h3 data-i18n="donation.title">¡Gracias por usar ScoreSpacer!</h3>
+            <p data-i18n="donation.message">Si esta herramienta te resulta útil, considera apoyar su desarrollo con una pequeña donación.</p>
+            <p class="modal-note" data-i18n="donation.note">Tu apoyo ayuda a mantener y mejorar esta herramienta gratuita.</p>
             <div class="modal-actions">
                 <a href="https://ko-fi.com/miralles" target="_blank" rel="noopener" class="btn btn-kofi">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 6px;">
                         <path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734 4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09-.443-.441-3.368-3.049-4.034-3.954-.709-.965-1.041-2.7-.091-3.71.951-1.01 3.005-1.086 4.363.407 0 0 1.565-1.782 3.468-.963 1.904.82 1.832 3.011.723 4.311zm6.173.478c-.928.116-1.682.028-1.682.028V7.284h1.77s1.971.551 1.971 2.638c0 1.913-.985 2.667-2.059 3.015z"/>
                     </svg>
-                    Invítame a una horchata
+                    <span data-i18n="donation.support">Invítame a una horchata</span>
                 </a>
-                <button class="btn btn-secondary" id="skipDonation">Continuar sin donar</button>
+                <button class="btn btn-secondary" id="skipDonation" data-i18n="donation.skip">Continuar sin donar</button>
             </div>
         </div>
     </div>
@@ -297,49 +309,49 @@
         <div class="modal modal-help">
             <button class="modal-close" id="closeHelpModal">&times;</button>
             <div class="modal-help-content">
-                <h2>ScoreSpacer</h2>
-                <p class="modal-help-tagline">Separador de Sistemas Musicales</p>
+                <h2 data-i18n="help.title">ScoreSpacer</h2>
+                <p class="modal-help-tagline" data-i18n="help.tagline">Separador de Sistemas Musicales</p>
 
                 <section>
-                    <h3>Que es ScoreSpacer?</h3>
-                    <p>ScoreSpacer es una herramienta web gratuita que permite añadir espacio entre los sistemas musicales de una partitura en formato PDF. Este espacio adicional resulta ideal para escribir anotaciones, digitaciones, arcos, dinámicas u otras indicaciones durante el estudio o la enseñanza musical.</p>
+                    <h3 data-i18n="help.whatIs.title">¿Qué es ScoreSpacer?</h3>
+                    <p data-i18n="help.whatIs.content">ScoreSpacer es una herramienta web gratuita que permite añadir espacio entre los sistemas musicales de una partitura en formato PDF. Este espacio adicional resulta ideal para escribir anotaciones, digitaciones, arcos, dinámicas u otras indicaciones durante el estudio o la enseñanza musical.</p>
                 </section>
 
                 <section>
-                    <h3>Caracteristicas principales</h3>
+                    <h3 data-i18n="help.features.title">Características principales</h3>
                     <ul>
-                        <li><strong>Procesamiento 100% en navegador:</strong> Tus archivos nunca salen de tu dispositivo. No se suben a ningún servidor.</li>
-                        <li><strong>Detección automática de sistemas:</strong> El algoritmo identifica automáticamente los sistemas musicales de cada página.</li>
-                        <li><strong>Edición manual:</strong> Puedes ajustar, dividir, eliminar o añadir sistemas manualmente.</li>
-                        <li><strong>Rotación y recorte:</strong> Corrige páginas escaneadas torcidas o con márgenes excesivos.</li>
-                        <li><strong>Exportación a PDF A4:</strong> Genera un nuevo PDF optimizado para impresión.</li>
+                        <li><strong data-i18n="help.features.browser">Procesamiento 100% en navegador:</strong> <span data-i18n="help.features.browserDesc">Tus archivos nunca salen de tu dispositivo. No se suben a ningún servidor.</span></li>
+                        <li><strong data-i18n="help.features.detection">Detección automática de sistemas:</strong> <span data-i18n="help.features.detectionDesc">El algoritmo identifica automáticamente los sistemas musicales de cada página.</span></li>
+                        <li><strong data-i18n="help.features.manual">Edición manual:</strong> <span data-i18n="help.features.manualDesc">Puedes ajustar, dividir, eliminar o añadir sistemas manualmente.</span></li>
+                        <li><strong data-i18n="help.features.rotation">Rotación y recorte:</strong> <span data-i18n="help.features.rotationDesc">Corrige páginas escaneadas torcidas o con márgenes excesivos.</span></li>
+                        <li><strong data-i18n="help.features.export">Exportación a PDF A4:</strong> <span data-i18n="help.features.exportDesc">Genera un nuevo PDF optimizado para impresión.</span></li>
                     </ul>
                 </section>
 
                 <section>
-                    <h3>Como usar ScoreSpacer</h3>
+                    <h3 data-i18n="help.howTo.title">Cómo usar ScoreSpacer</h3>
                     <ol>
-                        <li><strong>Sube tu PDF:</strong> Arrastra el archivo o haz clic para seleccionarlo.</li>
-                        <li><strong>Selecciona las páginas:</strong> Elige qué páginas quieres procesar y cuáles incluir en la exportación.</li>
-                        <li><strong>Ajusta los parámetros:</strong> Configura el espacio entre sistemas y los umbrales de detección.</li>
-                        <li><strong>Analiza:</strong> Haz clic en "Analizar PDF" para detectar los sistemas.</li>
-                        <li><strong>Revisa y edita:</strong> Ajusta manualmente los sistemas si es necesario.</li>
-                        <li><strong>Genera el PDF:</strong> Descarga tu partitura con el espaciado añadido.</li>
+                        <li><strong data-i18n="help.howTo.step1">Sube tu PDF:</strong> <span data-i18n="help.howTo.step1Desc">Arrastra el archivo o haz clic para seleccionarlo.</span></li>
+                        <li><strong data-i18n="help.howTo.step2">Selecciona las páginas:</strong> <span data-i18n="help.howTo.step2Desc">Elige qué páginas quieres procesar y cuáles incluir en la exportación.</span></li>
+                        <li><strong data-i18n="help.howTo.step3">Ajusta los parámetros:</strong> <span data-i18n="help.howTo.step3Desc">Configura el espacio entre sistemas y los umbrales de detección.</span></li>
+                        <li><strong data-i18n="help.howTo.step4">Analiza:</strong> <span data-i18n="help.howTo.step4Desc">Haz clic en "Analizar PDF" para detectar los sistemas.</span></li>
+                        <li><strong data-i18n="help.howTo.step5">Revisa y edita:</strong> <span data-i18n="help.howTo.step5Desc">Ajusta manualmente los sistemas si es necesario.</span></li>
+                        <li><strong data-i18n="help.howTo.step6">Genera el PDF:</strong> <span data-i18n="help.howTo.step6Desc">Descarga tu partitura con el espaciado añadido.</span></li>
                     </ol>
                 </section>
 
                 <section>
-                    <h3>Consejos</h3>
+                    <h3 data-i18n="help.tips.title">Consejos</h3>
                     <ul>
-                        <li>Para partituras escaneadas, usa la función de rotación si los pentagramas no están perfectamente horizontales.</li>
-                        <li>Ajusta el umbral de detección si el algoritmo no detecta correctamente los sistemas.</li>
-                        <li>Usa el recorte para eliminar márgenes innecesarios o encabezados.</li>
+                        <li data-i18n="help.tips.tip1">Para partituras escaneadas, usa la función de rotación si los pentagramas no están perfectamente horizontales.</li>
+                        <li data-i18n="help.tips.tip2">Ajusta el umbral de detección si el algoritmo no detecta correctamente los sistemas.</li>
+                        <li data-i18n="help.tips.tip3">Usa el recorte para eliminar márgenes innecesarios o encabezados.</li>
                     </ul>
                 </section>
 
                 <section class="modal-help-footer">
-                    <p>Creado por <a href="https://www.jlmirall.es" target="_blank" rel="noopener">Jose Luis Miralles Bono</a></p>
-                    <p>Version 1.1</p>
+                    <p><span data-i18n="help.footer.createdBy">Creado por</span> <a href="https://www.jlmirall.es" target="_blank" rel="noopener">José Luis Miralles Bono</a></p>
+                    <p data-i18n="help.footer.version">Versión 1.2</p>
                 </section>
             </div>
         </div>

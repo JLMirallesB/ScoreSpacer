@@ -934,6 +934,63 @@ h1 {
     text-align: center;
 }
 
+/* Filename Input */
+.filename-input-group {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filename-input-group label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.filename-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    max-width: 400px;
+    width: 100%;
+}
+
+.filename-input {
+    flex: 1;
+    padding: 0.6rem 0.75rem;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    outline: none;
+    min-width: 0;
+}
+
+.filename-input:focus {
+    background: var(--accent-light);
+}
+
+.filename-extension {
+    padding: 0.6rem 0.75rem;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    border-left: 1px solid var(--border);
+}
+
+/* Rotation Quick Actions */
+.rotation-quick-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
 /* Footer */
 footer {
     margin-top: 2rem;
@@ -980,6 +1037,7 @@ footer {
     background: #e54542;
     transform: translateY(-1px);
 }
+
 
 /* Utilities */
 .hidden {
@@ -1398,8 +1456,8 @@ footer {
 
 /* Help Button */
 .btn-help {
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
     border: 1px solid var(--border);
     border-radius: 50%;
     background: var(--bg-secondary);
@@ -1409,13 +1467,49 @@ footer {
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    margin-left: 0.75rem;
+    margin-left: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1;
 }
 
 .btn-help:hover {
     background: var(--accent-light);
     border-color: var(--accent);
     color: var(--accent);
+}
+
+/* Language Selector in Header */
+.language-selector-header {
+    margin-left: 0.5rem;
+}
+
+.language-selector-header select {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.35rem center;
+    padding-right: 1.5rem;
+}
+
+.language-selector-header select:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+.language-selector-header select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-light);
 }
 
 /* Help Modal */
@@ -1468,7 +1562,8 @@ footer {
 .modal-help ul,
 .modal-help ol {
     color: var(--text-secondary);
-    margin-left: 1.25rem;
+    margin-left: 0;
+    padding-left: 1.5rem;
     margin-bottom: 0.5rem;
 }
 
