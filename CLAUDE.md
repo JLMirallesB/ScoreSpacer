@@ -81,7 +81,7 @@ El proyecto está listo para GitHub Pages. Solo hacer push a `main` y activar Pa
 3. ANÁLISIS
    Páginas marcadas → ImageData → Projection Analysis → Systems[]
                                                               ↓
-                                         [Rotación manual opcional]
+                                    [Rotación/Recorte manual opcional]
                                                               ↓
                                           [Edición manual por usuario]
 
@@ -137,3 +137,29 @@ Después del análisis, aparece un botón "Rotar" que permite corregir páginas 
 5. "Cancelar" descarta los cambios
 
 **Nota:** La rotación aumenta ligeramente el tamaño del canvas para evitar recorte.
+
+## Recorte/Ajuste de Márgenes
+
+Después del análisis, aparece un botón "Recortar" que permite ajustar los márgenes de la página:
+
+**Controles:**
+- **Inputs numéricos**: valores en píxeles para cada lado (arriba, abajo, izquierda, derecha)
+- **Botones preset**: -50 y +50 píxeles (se acumulan al valor actual)
+- **Auto-detectar márgenes**: detecta automáticamente el contenido y ajusta los valores
+- **Reiniciar**: vuelve todos los valores a 0
+
+**Comportamiento de valores:**
+- **Valores positivos**: recortan/eliminan ese número de píxeles del borde
+- **Valores negativos**: añaden margen blanco en ese borde
+
+**Flujo:**
+1. Clic en "Recortar" abre el panel de recorte
+2. Ajustar valores manualmente o usar "Auto-detectar márgenes"
+3. La vista previa muestra el área resultante con borde azul punteado
+4. "Aplicar y re-analizar" recorta la imagen y vuelve a detectar sistemas
+5. "Cancelar" descarta los cambios
+
+**Casos de uso:**
+- Eliminar márgenes excesivos de páginas escaneadas
+- Recortar encabezados o pies de página no deseados
+- Añadir margen extra si el contenido está demasiado cerca del borde

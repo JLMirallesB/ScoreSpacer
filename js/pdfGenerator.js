@@ -2,7 +2,7 @@
  * PDF Generator - Create new PDF with spacing between systems on A4 pages
  */
 
-const { PDFDocument, rgb } = PDFLib;
+const { PDFDocument, rgb, StandardFonts } = PDFLib;
 
 export class PDFGenerator {
     constructor() {
@@ -22,6 +22,18 @@ export class PDFGenerator {
         // Usable area
         this.contentWidth = this.pageWidth - this.marginLeft - this.marginRight;
         this.contentHeight = this.pageHeight - this.marginTop - this.marginBottom;
+
+        // Watermark settings
+        this.showWatermark = true;
+        this.watermarkText = 'ScoreSpacer (www.jlmirall.es)';
+    }
+
+    /**
+     * Set watermark visibility
+     * @param {boolean} show - Whether to show watermark
+     */
+    setWatermark(show) {
+        this.showWatermark = show;
     }
 
     /**
@@ -55,6 +67,9 @@ export class PDFGenerator {
      */
     async generateA4(pageAnalysis, progressCallback = () => {}) {
         const pdfDoc = await PDFDocument.create();
+
+        // Embed font for watermark
+        const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
         // Collect all systems from all pages with their images
         const allSystems = [];
@@ -196,6 +211,12 @@ export class PDFGenerator {
             systemsOnCurrentPage++;
         }
 
+        // Add watermark to all pages with systems (pages without full-page images)
+        const pages = pdfDoc.getPages();
+        for (const page of pages) {
+            this.addWatermarkToPage(page, helveticaFont);
+        }
+
         progressCallback(100);
         return await pdfDoc.save();
     }
@@ -267,6 +288,28 @@ export class PDFGenerator {
             y: this.pageHeight - this.marginTop - Math.min(drawHeight, this.contentHeight),
             width: drawWidth,
             height: Math.min(drawHeight, this.contentHeight)
+        });
+    }
+
+    /**
+     * Add watermark to a page
+     * @param {PDFPage} page
+     * @param {PDFFont} font
+     */
+    addWatermarkToPage(page, font) {
+        if (!this.showWatermark) return;
+
+        const fontSize = 7;
+        const textWidth = font.widthOfTextAtSize(this.watermarkText, fontSize);
+        const x = this.pageWidth - this.marginRight - textWidth;
+
+        page.drawText(this.watermarkText, {
+            x: x,
+            y: 12,
+            size: fontSize,
+            font: font,
+            color: rgb(0.65, 0.65, 0.65),
+            opacity: 0.7
         });
     }
 

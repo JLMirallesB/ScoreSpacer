@@ -3,13 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Aplicación web para separar sistemas musicales en partituras PDF y añadir espacio entre ellos para anotaciones.">
+    <meta name="author" content="José Luis Miralles Bono">
+    <meta name="keywords" content="partitura, música, PDF, sistemas musicales, anotaciones, ScoreSpacer">
+    <meta property="og:title" content="ScoreSpacer - Separador de Sistemas Musicales">
+    <meta property="og:description" content="Añade espacio entre sistemas musicales para anotaciones. Procesamiento 100% en navegador.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.jlmirall.es/ScoreSpacer">
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
     <title>ScoreSpacer - Separador de Sistemas Musicales</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>ScoreSpacer</h1>
+            <div class="header-title">
+                <img src="icon.png" alt="ScoreSpacer" class="app-icon">
+                <h1>ScoreSpacer</h1>
+                <button class="btn-help" id="helpBtn" title="Ayuda">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </button>
+            </div>
             <p class="subtitle">Añade espacio entre sistemas musicales para anotaciones</p>
         </header>
 
@@ -26,6 +45,10 @@
                         </svg>
                         <p>Arrastra un PDF aquí o <button class="link-btn" id="selectFileBtn">selecciona un archivo</button></p>
                     </div>
+                </div>
+                <div class="disclaimer">
+                    <p><strong>Aviso legal:</strong> Al utilizar esta aplicación, el usuario declara y garantiza que posee los derechos de autor o cuenta con la autorización expresa del titular de los derechos sobre los documentos que sube, o bien que dichos documentos se encuentran en dominio público o están publicados bajo licencias que permiten su reproducción y modificación (como Creative Commons).</p>
+                    <p>ScoreSpacer y su creador no asumen responsabilidad alguna por el uso indebido, no autorizado o fraudulento de esta herramienta. El usuario es el único responsable de verificar que dispone de los permisos necesarios para procesar los documentos y de cumplir con la legislación vigente en materia de propiedad intelectual.</p>
                 </div>
             </section>
 
@@ -95,6 +118,14 @@
                             <input type="number" id="minGapInput" min="10" max="100" value="30">
                         </div>
                     </div>
+
+                    <div class="param-group param-watermark">
+                        <label>
+                            <input type="checkbox" id="disableWatermark">
+                            Ocultar marca de agua
+                        </label>
+                        <small>Por defecto se añade "ScoreSpacer (www.jlmirall.es)" en cada página</small>
+                    </div>
                 </div>
 
                 <!-- Preview -->
@@ -112,6 +143,12 @@
                                 <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
                             </svg>
                             Rotar
+                        </button>
+                        <button class="btn btn-secondary hidden" id="cropBtn" title="Recortar/ajustar márgenes">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                            </svg>
+                            Recortar
                         </button>
                     </div>
 
@@ -137,6 +174,58 @@
                             <button class="btn btn-primary" id="applyRotationBtn">Aplicar y re-analizar</button>
                         </div>
                     </div>
+
+                    <!-- Crop Panel -->
+                    <div class="crop-panel hidden" id="cropPanel">
+                        <div class="crop-header">
+                            <h4>Recortar/Ajustar márgenes</h4>
+                            <p>Valores positivos recortan, negativos añaden margen</p>
+                        </div>
+                        <div class="crop-controls">
+                            <div class="crop-grid">
+                                <div class="crop-control crop-top">
+                                    <label>Arriba</label>
+                                    <div class="crop-input-group">
+                                        <button class="btn-icon crop-preset" data-side="top" data-value="-50">-50</button>
+                                        <input type="number" id="cropTop" value="0" step="10">
+                                        <button class="btn-icon crop-preset" data-side="top" data-value="50">+50</button>
+                                    </div>
+                                </div>
+                                <div class="crop-control crop-left">
+                                    <label>Izquierda</label>
+                                    <div class="crop-input-group">
+                                        <button class="btn-icon crop-preset" data-side="left" data-value="-50">-50</button>
+                                        <input type="number" id="cropLeft" value="0" step="10">
+                                        <button class="btn-icon crop-preset" data-side="left" data-value="50">+50</button>
+                                    </div>
+                                </div>
+                                <div class="crop-control crop-right">
+                                    <label>Derecha</label>
+                                    <div class="crop-input-group">
+                                        <button class="btn-icon crop-preset" data-side="right" data-value="-50">-50</button>
+                                        <input type="number" id="cropRight" value="0" step="10">
+                                        <button class="btn-icon crop-preset" data-side="right" data-value="50">+50</button>
+                                    </div>
+                                </div>
+                                <div class="crop-control crop-bottom">
+                                    <label>Abajo</label>
+                                    <div class="crop-input-group">
+                                        <button class="btn-icon crop-preset" data-side="bottom" data-value="-50">-50</button>
+                                        <input type="number" id="cropBottom" value="0" step="10">
+                                        <button class="btn-icon crop-preset" data-side="bottom" data-value="50">+50</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="crop-quick-actions">
+                                <button class="btn btn-secondary btn-small" id="cropAutoDetect">Auto-detectar márgenes</button>
+                                <button class="btn btn-secondary btn-small" id="cropReset">Reiniciar</button>
+                            </div>
+                        </div>
+                        <div class="crop-actions">
+                            <button class="btn btn-secondary" id="cancelCropBtn">Cancelar</button>
+                            <button class="btn btn-primary" id="applyCropBtn">Aplicar y re-analizar</button>
+                        </div>
+                    </div>
                     <div class="preview-container" id="previewContainer">
                         <div class="preview-placeholder">
                             <p>Haz clic en "Analizar PDF" para ver la detección de sistemas</p>
@@ -160,12 +249,101 @@
         </main>
 
         <footer>
-            <p>ScoreSpacer - Procesamiento 100% en navegador</p>
+            <p class="footer-main">ScoreSpacer - Procesamiento 100% en navegador</p>
+            <p class="footer-credits">
+                Creado por <a href="https://www.jlmirall.es" target="_blank" rel="noopener">José Luis Miralles Bono</a>
+                con ayuda de <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>
+            </p>
+            <p class="footer-support">
+                <a href="https://ko-fi.com/miralles" target="_blank" rel="noopener" class="kofi-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 4px;">
+                        <path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734 4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09-.443-.441-3.368-3.049-4.034-3.954-.709-.965-1.041-2.7-.091-3.71.951-1.01 3.005-1.086 4.363.407 0 0 1.565-1.782 3.468-.963 1.904.82 1.832 3.011.723 4.311zm6.173.478c-.928.116-1.682.028-1.682.028V7.284h1.77s1.971.551 1.971 2.638c0 1.913-.985 2.667-2.059 3.015z"/>
+                    </svg>
+                    Invítame a una horchata
+                </a>
+            </p>
         </footer>
     </div>
 
     <!-- Hidden canvas for processing -->
     <canvas id="workCanvas" style="display: none;"></canvas>
+
+    <!-- Donation Modal -->
+    <div class="modal-overlay hidden" id="donationModal">
+        <div class="modal">
+            <button class="modal-close" id="closeDonationModal">&times;</button>
+            <div class="modal-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="#FF5E5B">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </div>
+            <h3>¡Gracias por usar ScoreSpacer!</h3>
+            <p>Si esta herramienta te resulta útil, considera apoyar su desarrollo con una pequeña donación.</p>
+            <p class="modal-note">Tu apoyo ayuda a mantener y mejorar esta herramienta gratuita.</p>
+            <div class="modal-actions">
+                <a href="https://ko-fi.com/miralles" target="_blank" rel="noopener" class="btn btn-kofi">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 6px;">
+                        <path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734 4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09-.443-.441-3.368-3.049-4.034-3.954-.709-.965-1.041-2.7-.091-3.71.951-1.01 3.005-1.086 4.363.407 0 0 1.565-1.782 3.468-.963 1.904.82 1.832 3.011.723 4.311zm6.173.478c-.928.116-1.682.028-1.682.028V7.284h1.77s1.971.551 1.971 2.638c0 1.913-.985 2.667-2.059 3.015z"/>
+                    </svg>
+                    Invítame a una horchata
+                </a>
+                <button class="btn btn-secondary" id="skipDonation">Continuar sin donar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay hidden" id="helpModal">
+        <div class="modal modal-help">
+            <button class="modal-close" id="closeHelpModal">&times;</button>
+            <div class="modal-help-content">
+                <h2>ScoreSpacer</h2>
+                <p class="modal-help-tagline">Separador de Sistemas Musicales</p>
+
+                <section>
+                    <h3>Que es ScoreSpacer?</h3>
+                    <p>ScoreSpacer es una herramienta web gratuita que permite añadir espacio entre los sistemas musicales de una partitura en formato PDF. Este espacio adicional resulta ideal para escribir anotaciones, digitaciones, arcos, dinámicas u otras indicaciones durante el estudio o la enseñanza musical.</p>
+                </section>
+
+                <section>
+                    <h3>Caracteristicas principales</h3>
+                    <ul>
+                        <li><strong>Procesamiento 100% en navegador:</strong> Tus archivos nunca salen de tu dispositivo. No se suben a ningún servidor.</li>
+                        <li><strong>Detección automática de sistemas:</strong> El algoritmo identifica automáticamente los sistemas musicales de cada página.</li>
+                        <li><strong>Edición manual:</strong> Puedes ajustar, dividir, eliminar o añadir sistemas manualmente.</li>
+                        <li><strong>Rotación y recorte:</strong> Corrige páginas escaneadas torcidas o con márgenes excesivos.</li>
+                        <li><strong>Exportación a PDF A4:</strong> Genera un nuevo PDF optimizado para impresión.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h3>Como usar ScoreSpacer</h3>
+                    <ol>
+                        <li><strong>Sube tu PDF:</strong> Arrastra el archivo o haz clic para seleccionarlo.</li>
+                        <li><strong>Selecciona las páginas:</strong> Elige qué páginas quieres procesar y cuáles incluir en la exportación.</li>
+                        <li><strong>Ajusta los parámetros:</strong> Configura el espacio entre sistemas y los umbrales de detección.</li>
+                        <li><strong>Analiza:</strong> Haz clic en "Analizar PDF" para detectar los sistemas.</li>
+                        <li><strong>Revisa y edita:</strong> Ajusta manualmente los sistemas si es necesario.</li>
+                        <li><strong>Genera el PDF:</strong> Descarga tu partitura con el espaciado añadido.</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h3>Consejos</h3>
+                    <ul>
+                        <li>Para partituras escaneadas, usa la función de rotación si los pentagramas no están perfectamente horizontales.</li>
+                        <li>Ajusta el umbral de detección si el algoritmo no detecta correctamente los sistemas.</li>
+                        <li>Usa el recorte para eliminar márgenes innecesarios o encabezados.</li>
+                    </ul>
+                </section>
+
+                <section class="modal-help-footer">
+                    <p>Creado por <a href="https://www.jlmirall.es" target="_blank" rel="noopener">Jose Luis Miralles Bono</a></p>
+                    <p>Version 1.1</p>
+                </section>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
