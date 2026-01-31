@@ -42,6 +42,7 @@ const translations = {
         'processing.parameters.minGap': 'Separación mínima entre sistemas (px)',
         'processing.parameters.watermark': 'Ocultar marca de agua',
         'processing.parameters.watermarkHelp': 'Por defecto se añade "ScoreSpacer (www.jlmirall.es)" en cada página',
+        'processing.continueToExport': 'Continuar a exportar →',
 
         // Preview
         'preview.title': 'Vista previa de detección',
@@ -59,6 +60,7 @@ const translations = {
         'preview.statusDetect': '(detectar)',
         'preview.statusExportOnly': '(solo exportar)',
         'preview.statusSkip': '(omitir)',
+        'preview.brightnessContrast': 'Brillo/Contraste',
 
         // Rotation panel
         'rotation.title': 'Rotación manual',
@@ -84,12 +86,36 @@ const translations = {
         'crop.applying': 'Aplicando...',
         'crop.invalidSize': 'Los valores de recorte resultan en un tamaño inválido',
 
+        // Brightness/Contrast panel
+        'brightnessContrast.title': 'Brillo y Contraste',
+        'brightnessContrast.help': 'Ajusta el brillo y contraste para mejorar la detección en escaneos de baja calidad',
+        'brightnessContrast.brightness': 'Brillo',
+        'brightnessContrast.contrast': 'Contraste',
+        'brightnessContrast.presetLight': 'Escaneo claro',
+        'brightnessContrast.presetDark': 'Escaneo oscuro',
+        'brightnessContrast.presetHighContrast': 'Alto contraste',
+        'brightnessContrast.reset': 'Reiniciar',
+        'brightnessContrast.cancel': 'Cancelar',
+        'brightnessContrast.apply': 'Aplicar y re-analizar',
+        'brightnessContrast.applying': 'Aplicando...',
+
+        // Undo/Redo
+        'undo.title': 'Deshacer (Ctrl+Z)',
+        'redo.title': 'Rehacer (Ctrl+Shift+Z)',
+
         // Generate
         'generate.filename': 'Nombre del archivo:',
         'generate.button': 'Generar PDF con espaciado',
         'generate.processing': 'Procesando...',
         'generate.success': 'PDF generado correctamente',
         'generate.noPages': 'No hay páginas seleccionadas para exportar',
+
+        // Export section
+        'export.title': 'Configuración de exportación',
+        'export.preview': 'Vista previa',
+        'export.noSystems': 'No hay sistemas detectados',
+        'export.moreSystems': '... y {count} sistemas más',
+        'export.backToProcessing': '← Volver a ajustes',
 
         // Systems
         'system.split': 'Dividir sistema en dos',
@@ -106,6 +132,29 @@ const translations = {
         'thumbnail.badgeDetect': 'Detectar sistemas',
         'thumbnail.badgeExport': 'Incluir en exportación',
         'thumbnail.generating': 'Generando miniaturas...',
+        'thumbnail.rotated': 'Rotado',
+        'thumbnail.cropped': 'Recortado',
+        'thumbnail.brightnessAdjusted': 'Brillo ajustado',
+        'thumbnail.systemsCount': '{count} sistemas',
+        'thumbnail.systemsCountSingular': '{count} sistema',
+
+        // Wizard
+        'wizard.step1': 'Cargar',
+        'wizard.step2': 'Seleccionar',
+        'wizard.step3': 'Ajustar',
+        'wizard.step4': 'Exportar',
+
+        // Config sidebar
+        'config.toggle': 'Configuración',
+        'config.title': 'Parámetros de detección',
+
+        // Toolbar
+        'toolbar.rotate': 'Rotar página',
+        'toolbar.crop': 'Recortar página',
+        'toolbar.brightness': 'Brillo y contraste',
+        'toolbar.addSystem': 'Añadir sistema',
+        'toolbar.undo': 'Deshacer',
+        'toolbar.redo': 'Rehacer',
 
         // Footer
         'footer.main': 'ScoreSpacer - Procesamiento 100% en navegador',
@@ -161,6 +210,7 @@ const translations = {
         'error.analyze': 'Error al analizar:',
         'error.rotation': 'Error al aplicar rotación:',
         'error.crop': 'Error al aplicar recorte:',
+        'error.brightnessContrast': 'Error al aplicar brillo/contraste:',
         'error.generate': 'Error al generar PDF:',
 
         // Language selector
@@ -208,6 +258,7 @@ const translations = {
         'processing.parameters.minGap': 'Separació mínima entre sistemes (px)',
         'processing.parameters.watermark': "Amagar marca d'aigua",
         'processing.parameters.watermarkHelp': 'Per defecte s\'afegeix "ScoreSpacer (www.jlmirall.es)" a cada pàgina',
+        'processing.continueToExport': 'Continuar a exportar →',
 
         // Preview
         'preview.title': 'Vista prèvia de detecció',
@@ -225,6 +276,7 @@ const translations = {
         'preview.statusDetect': '(detectar)',
         'preview.statusExportOnly': '(només exportar)',
         'preview.statusSkip': '(ometre)',
+        'preview.brightnessContrast': 'Brillantor/Contrast',
 
         // Rotation panel
         'rotation.title': 'Rotació manual',
@@ -250,12 +302,36 @@ const translations = {
         'crop.applying': 'Aplicant...',
         'crop.invalidSize': 'Els valors de retall resulten en una mida invàlida',
 
+        // Brightness/Contrast panel
+        'brightnessContrast.title': 'Brillantor i Contrast',
+        'brightnessContrast.help': 'Ajusta la brillantor i el contrast per millorar la detecció en escanejats de baixa qualitat',
+        'brightnessContrast.brightness': 'Brillantor',
+        'brightnessContrast.contrast': 'Contrast',
+        'brightnessContrast.presetLight': 'Escaneig clar',
+        'brightnessContrast.presetDark': 'Escaneig fosc',
+        'brightnessContrast.presetHighContrast': 'Alt contrast',
+        'brightnessContrast.reset': 'Reiniciar',
+        'brightnessContrast.cancel': 'Cancel·lar',
+        'brightnessContrast.apply': 'Aplicar i re-analitzar',
+        'brightnessContrast.applying': 'Aplicant...',
+
+        // Undo/Redo
+        'undo.title': 'Desfer (Ctrl+Z)',
+        'redo.title': 'Refer (Ctrl+Shift+Z)',
+
         // Generate
         'generate.filename': "Nom de l'arxiu:",
         'generate.button': 'Generar PDF amb espaiat',
         'generate.processing': 'Processant...',
         'generate.success': 'PDF generat correctament',
         'generate.noPages': "No hi ha pàgines seleccionades per exportar",
+
+        // Export section
+        'export.title': "Configuració d'exportació",
+        'export.preview': 'Vista prèvia',
+        'export.noSystems': 'No hi ha sistemes detectats',
+        'export.moreSystems': '... i {count} sistemes més',
+        'export.backToProcessing': '← Tornar a ajustos',
 
         // Systems
         'system.split': 'Dividir sistema en dos',
@@ -272,6 +348,29 @@ const translations = {
         'thumbnail.badgeDetect': 'Detectar sistemes',
         'thumbnail.badgeExport': "Incloure en l'exportació",
         'thumbnail.generating': 'Generant miniatures...',
+        'thumbnail.rotated': 'Rotat',
+        'thumbnail.cropped': 'Retallat',
+        'thumbnail.brightnessAdjusted': 'Brillantor ajustada',
+        'thumbnail.systemsCount': '{count} sistemes',
+        'thumbnail.systemsCountSingular': '{count} sistema',
+
+        // Wizard
+        'wizard.step1': 'Carregar',
+        'wizard.step2': 'Seleccionar',
+        'wizard.step3': 'Ajustar',
+        'wizard.step4': 'Exportar',
+
+        // Config sidebar
+        'config.toggle': 'Configuració',
+        'config.title': 'Paràmetres de detecció',
+
+        // Toolbar
+        'toolbar.rotate': 'Rotar pàgina',
+        'toolbar.crop': 'Retallar pàgina',
+        'toolbar.brightness': 'Brillantor i contrast',
+        'toolbar.addSystem': 'Afegir sistema',
+        'toolbar.undo': 'Desfer',
+        'toolbar.redo': 'Refer',
 
         // Footer
         'footer.main': 'ScoreSpacer - Processament 100% en navegador',
@@ -327,6 +426,7 @@ const translations = {
         'error.analyze': 'Error en analitzar:',
         'error.rotation': 'Error en aplicar rotació:',
         'error.crop': 'Error en aplicar retall:',
+        'error.brightnessContrast': 'Error en aplicar brillantor/contrast:',
         'error.generate': 'Error en generar PDF:',
 
         // Language selector
@@ -374,6 +474,7 @@ const translations = {
         'processing.parameters.minGap': 'Minimum gap between systems (px)',
         'processing.parameters.watermark': 'Hide watermark',
         'processing.parameters.watermarkHelp': 'By default "ScoreSpacer (www.jlmirall.es)" is added to each page',
+        'processing.continueToExport': 'Continue to export →',
 
         // Preview
         'preview.title': 'Detection preview',
@@ -391,6 +492,7 @@ const translations = {
         'preview.statusDetect': '(detect)',
         'preview.statusExportOnly': '(export only)',
         'preview.statusSkip': '(skip)',
+        'preview.brightnessContrast': 'Brightness/Contrast',
 
         // Rotation panel
         'rotation.title': 'Manual rotation',
@@ -416,12 +518,36 @@ const translations = {
         'crop.applying': 'Applying...',
         'crop.invalidSize': 'Crop values result in an invalid size',
 
+        // Brightness/Contrast panel
+        'brightnessContrast.title': 'Brightness and Contrast',
+        'brightnessContrast.help': 'Adjust brightness and contrast to improve detection in low-quality scans',
+        'brightnessContrast.brightness': 'Brightness',
+        'brightnessContrast.contrast': 'Contrast',
+        'brightnessContrast.presetLight': 'Light scan',
+        'brightnessContrast.presetDark': 'Dark scan',
+        'brightnessContrast.presetHighContrast': 'High contrast',
+        'brightnessContrast.reset': 'Reset',
+        'brightnessContrast.cancel': 'Cancel',
+        'brightnessContrast.apply': 'Apply and re-analyze',
+        'brightnessContrast.applying': 'Applying...',
+
+        // Undo/Redo
+        'undo.title': 'Undo (Ctrl+Z)',
+        'redo.title': 'Redo (Ctrl+Shift+Z)',
+
         // Generate
         'generate.filename': 'Filename:',
         'generate.button': 'Generate PDF with spacing',
         'generate.processing': 'Processing...',
         'generate.success': 'PDF generated successfully',
         'generate.noPages': 'No pages selected for export',
+
+        // Export section
+        'export.title': 'Export settings',
+        'export.preview': 'Preview',
+        'export.noSystems': 'No systems detected',
+        'export.moreSystems': '... and {count} more systems',
+        'export.backToProcessing': '← Back to adjustments',
 
         // Systems
         'system.split': 'Split system in two',
@@ -438,6 +564,29 @@ const translations = {
         'thumbnail.badgeDetect': 'Detect systems',
         'thumbnail.badgeExport': 'Include in export',
         'thumbnail.generating': 'Generating thumbnails...',
+        'thumbnail.rotated': 'Rotated',
+        'thumbnail.cropped': 'Cropped',
+        'thumbnail.brightnessAdjusted': 'Brightness adjusted',
+        'thumbnail.systemsCount': '{count} systems',
+        'thumbnail.systemsCountSingular': '{count} system',
+
+        // Wizard
+        'wizard.step1': 'Upload',
+        'wizard.step2': 'Select',
+        'wizard.step3': 'Adjust',
+        'wizard.step4': 'Export',
+
+        // Config sidebar
+        'config.toggle': 'Settings',
+        'config.title': 'Detection parameters',
+
+        // Toolbar
+        'toolbar.rotate': 'Rotate page',
+        'toolbar.crop': 'Crop page',
+        'toolbar.brightness': 'Brightness and contrast',
+        'toolbar.addSystem': 'Add system',
+        'toolbar.undo': 'Undo',
+        'toolbar.redo': 'Redo',
 
         // Footer
         'footer.main': 'ScoreSpacer - 100% browser-based processing',
@@ -493,6 +642,7 @@ const translations = {
         'error.analyze': 'Error analyzing:',
         'error.rotation': 'Error applying rotation:',
         'error.crop': 'Error applying crop:',
+        'error.brightnessContrast': 'Error applying brightness/contrast:',
         'error.generate': 'Error generating PDF:',
 
         // Language selector

@@ -33,6 +33,29 @@
             <p class="subtitle" data-i18n="header.subtitle">Añade espacio entre sistemas musicales para anotaciones</p>
         </header>
 
+        <!-- Wizard Progress Indicator -->
+        <nav class="wizard-progress" id="wizardProgress">
+            <div class="wizard-step active" data-step="1">
+                <div class="wizard-step-circle">1</div>
+                <span class="wizard-step-label" data-i18n="wizard.step1">Cargar</span>
+            </div>
+            <div class="wizard-step-connector"></div>
+            <div class="wizard-step" data-step="2">
+                <div class="wizard-step-circle">2</div>
+                <span class="wizard-step-label" data-i18n="wizard.step2">Seleccionar</span>
+            </div>
+            <div class="wizard-step-connector"></div>
+            <div class="wizard-step" data-step="3">
+                <div class="wizard-step-circle">3</div>
+                <span class="wizard-step-label" data-i18n="wizard.step3">Ajustar</span>
+            </div>
+            <div class="wizard-step-connector"></div>
+            <div class="wizard-step" data-step="4">
+                <div class="wizard-step-circle">4</div>
+                <span class="wizard-step-label" data-i18n="wizard.step4">Exportar</span>
+            </div>
+        </nav>
+
         <main>
             <!-- Upload Section -->
             <section class="upload-section" id="uploadSection">
@@ -89,43 +112,29 @@
             <section class="processing-section hidden" id="processingSection">
                 <div class="section-nav">
                     <button class="btn btn-secondary btn-small" id="backToSelectionBtn" data-i18n="processing.backToSelection">← Volver a selección</button>
+                    <button class="btn btn-primary btn-small hidden" id="continueToExportBtn" data-i18n="processing.continueToExport">Continuar a exportar →</button>
                 </div>
 
-                <!-- Parameters -->
-                <div class="parameters">
+                <!-- Parameters (inline) -->
+                <div class="parameters-panel" id="parametersPanel">
                     <h3 data-i18n="processing.parameters.title">Parámetros de detección</h3>
-
-                    <div class="param-group">
-                        <label for="spacingInput" data-i18n="processing.parameters.spacing">Espacio entre sistemas (px)</label>
-                        <div class="param-control">
-                            <input type="range" id="spacingSlider" min="50" max="500" value="150">
-                            <input type="number" id="spacingInput" min="50" max="500" value="150">
+                    <div class="parameters-grid">
+                        <div class="param-group">
+                            <label for="thresholdInput" data-i18n="processing.parameters.threshold">Umbral de detección (%)</label>
+                            <div class="param-control">
+                                <input type="range" id="thresholdSlider" min="1" max="20" value="5">
+                                <input type="number" id="thresholdInput" min="1" max="20" value="5">
+                            </div>
+                            <small data-i18n="processing.parameters.thresholdHelp">Porcentaje mínimo de píxeles oscuros para considerar una línea como parte de un sistema</small>
                         </div>
-                    </div>
 
-                    <div class="param-group">
-                        <label for="thresholdInput" data-i18n="processing.parameters.threshold">Umbral de detección (%)</label>
-                        <div class="param-control">
-                            <input type="range" id="thresholdSlider" min="1" max="20" value="5">
-                            <input type="number" id="thresholdInput" min="1" max="20" value="5">
+                        <div class="param-group">
+                            <label for="minGapInput" data-i18n="processing.parameters.minGap">Separación mínima entre sistemas (px)</label>
+                            <div class="param-control">
+                                <input type="range" id="minGapSlider" min="10" max="100" value="30">
+                                <input type="number" id="minGapInput" min="10" max="100" value="30">
+                            </div>
                         </div>
-                        <small data-i18n="processing.parameters.thresholdHelp">Porcentaje mínimo de píxeles oscuros para considerar una línea como parte de un sistema</small>
-                    </div>
-
-                    <div class="param-group">
-                        <label for="minGapInput" data-i18n="processing.parameters.minGap">Separación mínima entre sistemas (px)</label>
-                        <div class="param-control">
-                            <input type="range" id="minGapSlider" min="10" max="100" value="30">
-                            <input type="number" id="minGapInput" min="10" max="100" value="30">
-                        </div>
-                    </div>
-
-                    <div class="param-group param-watermark">
-                        <label>
-                            <input type="checkbox" id="disableWatermark">
-                            <span data-i18n="processing.parameters.watermark">Ocultar marca de agua</span>
-                        </label>
-                        <small data-i18n="processing.parameters.watermarkHelp">Por defecto se añade "ScoreSpacer (www.jlmirall.es)" en cada página</small>
                     </div>
                 </div>
 
@@ -139,6 +148,10 @@
                             <span id="pageIndicator">Página 1 de 1</span>
                             <button class="btn-icon" id="nextPageBtn">→</button>
                         </div>
+                        <div class="undo-redo-controls">
+                            <button class="btn-icon btn-undo" id="undoBtn" disabled data-i18n-title="undo.title" title="Deshacer (Ctrl+Z)">↶</button>
+                            <button class="btn-icon btn-redo" id="redoBtn" disabled data-i18n-title="redo.title" title="Rehacer (Ctrl+Shift+Z)">↷</button>
+                        </div>
                         <button class="btn btn-secondary hidden" id="rotateBtn" title="Rotar página manualmente">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
                                 <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -150,6 +163,12 @@
                                 <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
                             </svg>
                             <span data-i18n="preview.crop">Recortar</span>
+                        </button>
+                        <button class="btn btn-secondary hidden" id="brightnessContrastBtn" data-i18n-title="brightnessContrast.title" title="Ajustar brillo y contraste">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                            </svg>
+                            <span data-i18n="preview.brightnessContrast">Brillo/Contraste</span>
                         </button>
                     </div>
 
@@ -231,6 +250,77 @@
                             <button class="btn btn-primary" id="applyCropBtn" data-i18n="crop.apply">Aplicar y re-analizar</button>
                         </div>
                     </div>
+
+                    <!-- Brightness/Contrast Panel -->
+                    <div class="brightness-contrast-panel hidden" id="brightnessContrastPanel">
+                        <div class="brightness-contrast-header">
+                            <h4 data-i18n="brightnessContrast.title">Brillo y Contraste</h4>
+                            <p data-i18n="brightnessContrast.help">Ajusta el brillo y contraste para mejorar la detección en escaneos de baja calidad</p>
+                        </div>
+                        <div class="brightness-contrast-controls">
+                            <div class="brightness-contrast-slider-group">
+                                <label data-i18n="brightnessContrast.brightness">Brillo</label>
+                                <div class="brightness-contrast-slider-row">
+                                    <input type="range" id="brightnessSlider" min="50" max="150" value="100">
+                                    <input type="number" id="brightnessInput" min="50" max="150" value="100">
+                                    <span>%</span>
+                                </div>
+                            </div>
+                            <div class="brightness-contrast-slider-group">
+                                <label data-i18n="brightnessContrast.contrast">Contraste</label>
+                                <div class="brightness-contrast-slider-row">
+                                    <input type="range" id="contrastSlider" min="50" max="150" value="100">
+                                    <input type="number" id="contrastInput" min="50" max="150" value="100">
+                                    <span>%</span>
+                                </div>
+                            </div>
+                            <div class="brightness-contrast-presets">
+                                <button class="btn btn-secondary btn-small brightness-contrast-preset" data-brightness="110" data-contrast="110" data-i18n="brightnessContrast.presetLight">Escaneo claro</button>
+                                <button class="btn btn-secondary btn-small brightness-contrast-preset" data-brightness="90" data-contrast="120" data-i18n="brightnessContrast.presetDark">Escaneo oscuro</button>
+                                <button class="btn btn-secondary btn-small brightness-contrast-preset" data-brightness="100" data-contrast="130" data-i18n="brightnessContrast.presetHighContrast">Alto contraste</button>
+                            </div>
+                        </div>
+                        <div class="brightness-contrast-quick-actions">
+                            <button class="btn btn-secondary btn-small" id="brightnessContrastReset" data-i18n="brightnessContrast.reset">Reiniciar</button>
+                        </div>
+                        <div class="brightness-contrast-actions">
+                            <button class="btn btn-secondary" id="cancelBrightnessContrastBtn" data-i18n="brightnessContrast.cancel">Cancelar</button>
+                            <button class="btn btn-primary" id="applyBrightnessContrastBtn" data-i18n="brightnessContrast.apply">Aplicar y re-analizar</button>
+                        </div>
+                    </div>
+
+                    <!-- Contextual Toolbar -->
+                    <div class="contextual-toolbar" id="contextualToolbar">
+                        <button class="toolbar-btn" id="toolbarRotate" disabled data-i18n-title="toolbar.rotate" title="Rotar página">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                            </svg>
+                        </button>
+                        <button class="toolbar-btn" id="toolbarCrop" disabled data-i18n-title="toolbar.crop" title="Recortar página">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
+                            </svg>
+                        </button>
+                        <button class="toolbar-btn" id="toolbarBrightness" disabled data-i18n-title="toolbar.brightness" title="Brillo y contraste">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                            </svg>
+                        </button>
+                        <div class="toolbar-separator"></div>
+                        <button class="toolbar-btn" id="toolbarAddSystem" disabled data-i18n-title="toolbar.addSystem" title="Añadir sistema">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                        </button>
+                        <div class="toolbar-separator"></div>
+                        <button class="toolbar-btn" id="toolbarUndo" disabled data-i18n-title="undo.title" title="Deshacer (Ctrl+Z)">
+                            <span>↶</span>
+                        </button>
+                        <button class="toolbar-btn" id="toolbarRedo" disabled data-i18n-title="redo.title" title="Rehacer (Ctrl+Shift+Z)">
+                            <span>↷</span>
+                        </button>
+                    </div>
+
                     <div class="preview-container" id="previewContainer">
                         <div class="preview-placeholder">
                             <p data-i18n="preview.placeholder">Haz clic en "Analizar PDF" para ver la detección de sistemas</p>
@@ -242,22 +332,59 @@
                     </div>
                 </div>
 
-                <!-- Generate -->
-                <div class="generate-section">
-                    <div class="filename-input-group hidden" id="filenameGroup">
-                        <label for="outputFilename" data-i18n="generate.filename">Nombre del archivo:</label>
-                        <div class="filename-input-wrapper">
-                            <input type="text" id="outputFilename" class="filename-input" value="">
-                            <span class="filename-extension">.pdf</span>
+            </section>
+
+            <!-- Export Section (Step 4) -->
+            <section class="export-section hidden" id="exportSection">
+                <div class="section-nav">
+                    <button class="btn btn-secondary btn-small" id="backToProcessingBtn" data-i18n="export.backToProcessing">← Volver a ajustes</button>
+                </div>
+
+                <h2 data-i18n="export.title">Configuración de exportación</h2>
+
+                <div class="export-layout">
+                    <!-- Export Preview -->
+                    <div class="export-preview" id="exportPreview">
+                        <div class="export-preview-label" data-i18n="export.preview">Vista previa</div>
+                        <div class="export-preview-container" id="exportPreviewContainer">
+                            <!-- Preview will be rendered here -->
                         </div>
                     </div>
-                    <button class="btn btn-primary" id="generateBtn" disabled data-i18n="generate.button">Generar PDF con espaciado</button>
-                    <div class="progress hidden" id="progressBar">
-                        <div class="progress-bar"></div>
-                        <span class="progress-text" data-i18n="generate.processing">Procesando...</span>
+
+                    <!-- Export Controls -->
+                    <div class="export-controls">
+                        <div class="param-group">
+                            <label for="spacingInput" data-i18n="processing.parameters.spacing">Espacio entre sistemas (px)</label>
+                            <div class="param-control">
+                                <input type="range" id="spacingSlider" min="50" max="500" value="150">
+                                <input type="number" id="spacingInput" min="50" max="500" value="150">
+                            </div>
+                        </div>
+
+                        <div class="param-group param-watermark">
+                            <label>
+                                <input type="checkbox" id="disableWatermark">
+                                <span data-i18n="processing.parameters.watermark">Ocultar marca de agua</span>
+                            </label>
+                        </div>
+
+                        <div class="filename-input-group" id="filenameGroup">
+                            <label for="outputFilename" data-i18n="generate.filename">Nombre del archivo:</label>
+                            <div class="filename-input-wrapper">
+                                <input type="text" id="outputFilename" class="filename-input" value="">
+                                <span class="filename-extension">.pdf</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary btn-large" id="generateBtn" data-i18n="generate.button">Generar PDF con espaciado</button>
+                        <div class="progress hidden" id="progressBar">
+                            <div class="progress-bar"></div>
+                            <span class="progress-text" data-i18n="generate.processing">Procesando...</span>
+                        </div>
                     </div>
                 </div>
             </section>
+
         </main>
 
         <footer>

@@ -38,6 +38,20 @@ class ScoreSpacer {
         this.cropDragEdge = null; // 'top', 'bottom', 'left', 'right', 'tl', 'tr', 'bl', 'br'
         this.cropDragStartPos = { x: 0, y: 0 };
 
+        // For brightness/contrast
+        this.isBrightnessContrastMode = false;
+        this.currentBrightness = 100;
+        this.currentContrast = 100;
+
+        // For undo/redo (per-page history)
+        this.undoStacks = {}; // { pageNum: [snapshot, ...] }
+        this.redoStacks = {}; // { pageNum: [snapshot, ...] }
+        this.maxHistorySize = 30;
+
+        // Wizard state
+        this.currentStep = 1;
+        this.completedSteps = new Set();
+
         this.initElements();
         this.initEventListeners();
         this.syncParams();
@@ -84,11 +98,17 @@ class ScoreSpacer {
         this.projectionContainer = document.getElementById('projectionContainer');
         this.projectionCanvas = document.getElementById('projectionCanvas');
 
-        // Generate
+        // Export section
+        this.exportSection = document.getElementById('exportSection');
+        this.exportPreviewContainer = document.getElementById('exportPreviewContainer');
         this.generateBtn = document.getElementById('generateBtn');
         this.progressBar = document.getElementById('progressBar');
         this.filenameGroup = document.getElementById('filenameGroup');
         this.outputFilename = document.getElementById('outputFilename');
+
+        // Navigation between sections
+        this.continueToExportBtn = document.getElementById('continueToExportBtn');
+        this.backToProcessingBtn = document.getElementById('backToProcessingBtn');
 
         // Rotation
         this.rotateBtn = document.getElementById('rotateBtn');
@@ -112,6 +132,21 @@ class ScoreSpacer {
         this.cancelCropBtn = document.getElementById('cancelCropBtn');
         this.applyCropBtn = document.getElementById('applyCropBtn');
 
+        // Brightness/Contrast
+        this.brightnessContrastBtn = document.getElementById('brightnessContrastBtn');
+        this.brightnessContrastPanel = document.getElementById('brightnessContrastPanel');
+        this.brightnessSlider = document.getElementById('brightnessSlider');
+        this.brightnessInput = document.getElementById('brightnessInput');
+        this.contrastSlider = document.getElementById('contrastSlider');
+        this.contrastInput = document.getElementById('contrastInput');
+        this.brightnessContrastResetBtn = document.getElementById('brightnessContrastReset');
+        this.cancelBrightnessContrastBtn = document.getElementById('cancelBrightnessContrastBtn');
+        this.applyBrightnessContrastBtn = document.getElementById('applyBrightnessContrastBtn');
+
+        // Undo/Redo
+        this.undoBtn = document.getElementById('undoBtn');
+        this.redoBtn = document.getElementById('redoBtn');
+
         // Watermark and donation modal
         this.disableWatermarkCheckbox = document.getElementById('disableWatermark');
         this.donationModal = document.getElementById('donationModal');
@@ -125,6 +160,20 @@ class ScoreSpacer {
 
         // Language selector
         this.languageSelect = document.getElementById('languageSelect');
+
+        // Wizard
+        this.wizardProgress = document.getElementById('wizardProgress');
+        this.wizardSteps = document.querySelectorAll('.wizard-step');
+        this.wizardConnectors = document.querySelectorAll('.wizard-step-connector');
+
+        // Contextual toolbar
+        this.contextualToolbar = document.getElementById('contextualToolbar');
+        this.toolbarRotate = document.getElementById('toolbarRotate');
+        this.toolbarCrop = document.getElementById('toolbarCrop');
+        this.toolbarBrightness = document.getElementById('toolbarBrightness');
+        this.toolbarAddSystem = document.getElementById('toolbarAddSystem');
+        this.toolbarUndo = document.getElementById('toolbarUndo');
+        this.toolbarRedo = document.getElementById('toolbarRedo');
     }
 
     initEventListeners() {
@@ -167,19 +216,51 @@ class ScoreSpacer {
         // Navigation between sections
         this.continueToProcessBtn.addEventListener('click', () => this.showProcessingSection());
         this.backToSelectionBtn.addEventListener('click', () => this.showPageSelectionSection());
+        this.continueToExportBtn.addEventListener('click', () => this.showExportSection());
+        this.backToProcessingBtn.addEventListener('click', () => this.backToProcessingFromExport());
 
         // Parameter sliders sync
         this.setupSliderSync(this.spacingSlider, this.spacingInput);
         this.setupSliderSync(this.thresholdSlider, this.thresholdInput);
         this.setupSliderSync(this.minGapSlider, this.minGapInput);
 
-        // Parameter changes trigger re-analysis
+        // Parameter changes trigger re-analysis (debounced for sliders)
+        let reanalysisTimeout = null;
+        const triggerReanalysis = () => {
+            if (this.isAnalyzed) {
+                clearTimeout(reanalysisTimeout);
+                reanalysisTimeout = setTimeout(() => {
+                    this.analyzeCurrentPage();
+                }, 150); // Small debounce for smooth slider experience
+            }
+        };
+
+        // Sliders: live feedback while dragging
+        [this.thresholdSlider, this.minGapSlider].forEach(slider => {
+            slider.addEventListener('input', triggerReanalysis);
+        });
+
+        // Inputs: re-analyze on change
         [this.thresholdInput, this.minGapInput].forEach(input => {
             input.addEventListener('change', () => {
                 if (this.isAnalyzed) {
                     this.analyzeCurrentPage();
                 }
             });
+        });
+
+        // Spacing slider: update export preview in real-time
+        this.spacingSlider.addEventListener('input', () => {
+            this.spacingInput.value = this.spacingSlider.value;
+            if (this.isAnalyzed) {
+                this.renderExportPreview();
+            }
+        });
+        this.spacingInput.addEventListener('change', () => {
+            this.spacingSlider.value = this.spacingInput.value;
+            if (this.isAnalyzed) {
+                this.renderExportPreview();
+            }
         });
 
         // Analyze button
@@ -263,6 +344,62 @@ class ScoreSpacer {
             });
         });
 
+        // Brightness/Contrast controls
+        this.brightnessContrastBtn.addEventListener('click', () => this.enterBrightnessContrastMode());
+        this.cancelBrightnessContrastBtn.addEventListener('click', () => this.exitBrightnessContrastMode());
+        this.applyBrightnessContrastBtn.addEventListener('click', () => this.applyBrightnessContrast());
+        this.brightnessContrastResetBtn.addEventListener('click', () => this.resetBrightnessContrast());
+
+        // Brightness/Contrast sliders sync
+        this.brightnessSlider.addEventListener('input', () => {
+            this.brightnessInput.value = this.brightnessSlider.value;
+            this.previewBrightnessContrast();
+        });
+        this.brightnessInput.addEventListener('change', () => {
+            const value = Math.min(Math.max(parseInt(this.brightnessInput.value) || 100, 50), 150);
+            this.brightnessInput.value = value;
+            this.brightnessSlider.value = value;
+            this.previewBrightnessContrast();
+        });
+        this.contrastSlider.addEventListener('input', () => {
+            this.contrastInput.value = this.contrastSlider.value;
+            this.previewBrightnessContrast();
+        });
+        this.contrastInput.addEventListener('change', () => {
+            const value = Math.min(Math.max(parseInt(this.contrastInput.value) || 100, 50), 150);
+            this.contrastInput.value = value;
+            this.contrastSlider.value = value;
+            this.previewBrightnessContrast();
+        });
+
+        // Brightness/Contrast preset buttons
+        document.querySelectorAll('.brightness-contrast-preset').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const brightness = parseInt(btn.dataset.brightness);
+                const contrast = parseInt(btn.dataset.contrast);
+                this.brightnessSlider.value = brightness;
+                this.brightnessInput.value = brightness;
+                this.contrastSlider.value = contrast;
+                this.contrastInput.value = contrast;
+                this.previewBrightnessContrast();
+            });
+        });
+
+        // Undo/Redo controls
+        this.undoBtn.addEventListener('click', () => this.undo());
+        this.redoBtn.addEventListener('click', () => this.redo());
+
+        // Keyboard shortcuts for undo/redo
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                this.undo();
+            } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                e.preventDefault();
+                this.redo();
+            }
+        });
+
         // Watermark checkbox - show donation modal when checked
         this.disableWatermarkCheckbox.addEventListener('change', () => {
             if (this.disableWatermarkCheckbox.checked) {
@@ -313,6 +450,25 @@ class ScoreSpacer {
             }
             this.updatePageIndicator();
         });
+
+        // Wizard step click navigation
+        this.wizardSteps.forEach((stepEl, index) => {
+            stepEl.addEventListener('click', () => {
+                const stepNum = index + 1;
+                // Only allow navigation to completed steps
+                if (this.completedSteps.has(stepNum) && stepNum < this.currentStep) {
+                    this.navigateToStep(stepNum);
+                }
+            });
+        });
+
+        // Contextual toolbar buttons
+        this.toolbarRotate.addEventListener('click', () => this.enterRotationMode());
+        this.toolbarCrop.addEventListener('click', () => this.enterCropMode());
+        this.toolbarBrightness.addEventListener('click', () => this.enterBrightnessContrastMode());
+        this.toolbarAddSystem.addEventListener('click', () => this.addNewSystem());
+        this.toolbarUndo.addEventListener('click', () => this.undo());
+        this.toolbarRedo.addEventListener('click', () => this.redo());
     }
 
     setupSliderSync(slider, input) {
@@ -378,7 +534,7 @@ class ScoreSpacer {
             // Reset analysis
             this.isAnalyzed = false;
             this.pageAnalysis = [];
-            this.generateBtn.disabled = true;
+            this.exportSection.classList.add('hidden');
 
             // Show page selection
             this.uploadSection.classList.add('hidden');
@@ -387,6 +543,10 @@ class ScoreSpacer {
 
             // Generate thumbnails
             await this.generateThumbnails();
+
+            // Update wizard
+            this.completedSteps.add(1);
+            this.updateWizardStep(2);
 
         } catch (error) {
             console.error('Error loading PDF:', error);
@@ -491,6 +651,40 @@ class ScoreSpacer {
         info.appendChild(badges);
         div.appendChild(info);
 
+        // Transform badges container (for rotation, crop, brightness icons)
+        const transforms = document.createElement('div');
+        transforms.className = 'page-thumbnail-transforms hidden';
+
+        const rotateBadge = document.createElement('span');
+        rotateBadge.className = 'transform-badge transform-rotate hidden';
+        rotateBadge.textContent = '🔄';
+        rotateBadge.title = i18n.t('thumbnail.rotated');
+        transforms.appendChild(rotateBadge);
+
+        const cropBadge = document.createElement('span');
+        cropBadge.className = 'transform-badge transform-crop hidden';
+        cropBadge.textContent = '✂️';
+        cropBadge.title = i18n.t('thumbnail.cropped');
+        transforms.appendChild(cropBadge);
+
+        const brightnessBadge = document.createElement('span');
+        brightnessBadge.className = 'transform-badge transform-brightness hidden';
+        brightnessBadge.textContent = '☀️';
+        brightnessBadge.title = i18n.t('thumbnail.brightnessAdjusted');
+        transforms.appendChild(brightnessBadge);
+
+        div.appendChild(transforms);
+
+        // System count badge
+        const systemsContainer = document.createElement('div');
+        systemsContainer.className = 'page-thumbnail-systems hidden';
+
+        const systemsCount = document.createElement('span');
+        systemsCount.className = 'systems-count';
+        systemsContainer.appendChild(systemsCount);
+
+        div.appendChild(systemsContainer);
+
         // Click on thumbnail cycles through states
         div.addEventListener('click', () => this.cyclePageState(index));
 
@@ -581,29 +775,65 @@ class ScoreSpacer {
         this.isAnalyzed = false;
         this.pageAnalysis = [];
         this.currentPage = 1;
-        this.generateBtn.disabled = true;
 
-        // Hide rotation and crop controls
+        // Hide rotation, crop, brightness and export controls
         this.rotateBtn.classList.add('hidden');
         this.rotationPanel.classList.add('hidden');
         this.isRotationMode = false;
         this.cropBtn.classList.add('hidden');
         this.cropPanel.classList.add('hidden');
         this.isCropMode = false;
+        this.brightnessContrastBtn.classList.add('hidden');
+        this.brightnessContrastPanel.classList.add('hidden');
+        this.isBrightnessContrastMode = false;
+        this.continueToExportBtn.classList.add('hidden');
+
+        // Clear undo/redo history
+        this.undoStacks = {};
+        this.redoStacks = {};
+        this.updateUndoRedoButtons();
 
         // Update page navigation to show only pages with detect or export enabled
         this.updatePageNav();
 
-        this.previewContainer.innerHTML = `
-            <div class="preview-placeholder">
-                <p>${i18n.t('preview.placeholder')}</p>
-            </div>
-        `;
+        // Update wizard
+        this.completedSteps.add(2);
+        this.updateWizardStep(3);
+
+        // Update toolbar state
+        this.updateToolbarState();
+
+        // Auto-analyze to give immediate feedback
+        this.analyzeAllPages();
     }
 
     showPageSelectionSection() {
         this.processingSection.classList.add('hidden');
+        this.exportSection.classList.add('hidden');
         this.pageSelectionSection.classList.remove('hidden');
+
+        // Update wizard
+        this.updateWizardStep(2);
+    }
+
+    showExportSection() {
+        this.processingSection.classList.add('hidden');
+        this.exportSection.classList.remove('hidden');
+
+        // Render export preview
+        this.renderExportPreview();
+
+        // Update wizard
+        this.completedSteps.add(3);
+        this.updateWizardStep(4);
+    }
+
+    backToProcessingFromExport() {
+        this.exportSection.classList.add('hidden');
+        this.processingSection.classList.remove('hidden');
+
+        // Update wizard (back to step 3)
+        this.updateWizardStep(3);
     }
 
     updatePageNav() {
@@ -688,16 +918,23 @@ class ScoreSpacer {
             }
 
             this.isAnalyzed = true;
-            this.generateBtn.disabled = false;
             this.rotateBtn.classList.remove('hidden');
             this.cropBtn.classList.remove('hidden');
             this.showPageAnalysis(this.currentPage);
             this.pageNav.classList.remove('hidden');
 
-            // Show filename input with default value
-            this.filenameGroup.classList.remove('hidden');
+            // Show "Continue to Export" button (step 4 is now separate)
+            this.continueToExportBtn.classList.remove('hidden');
+
+            // Prepare filename for export
             const originalName = this.fileName.textContent.replace('.pdf', '');
             this.outputFilename.value = `${originalName}_spaced`;
+
+            // Update toolbar state
+            this.updateToolbarState();
+
+            // Update all thumbnail indicators
+            this.updateAllThumbnailIndicators();
 
         } catch (error) {
             console.error('Error analyzing PDF:', error);
@@ -735,28 +972,39 @@ class ScoreSpacer {
         // Show preview with system overlays
         this.renderPreview(pageData);
 
-        // Show projection graph and rotation/crop buttons only for non-skipped pages
+        // Show projection graph and rotation/crop/brightness buttons only for non-skipped pages
         if (!pageData.skipped) {
             this.projectionContainer.classList.remove('hidden');
             this.renderProjectionGraph(pageData);
-            // Show rotation and crop buttons if analyzed
+            // Show rotation, crop and brightness buttons if analyzed
             if (this.isAnalyzed) {
                 this.rotateBtn.classList.remove('hidden');
                 this.cropBtn.classList.remove('hidden');
+                this.brightnessContrastBtn.classList.remove('hidden');
             }
         } else {
             this.projectionContainer.classList.add('hidden');
             this.rotateBtn.classList.add('hidden');
             this.cropBtn.classList.add('hidden');
+            this.brightnessContrastBtn.classList.add('hidden');
         }
 
-        // Exit rotation/crop mode when changing pages
+        // Exit edit modes when changing pages
         if (this.isRotationMode) {
             this.exitRotationMode();
         }
         if (this.isCropMode) {
             this.exitCropMode();
         }
+        if (this.isBrightnessContrastMode) {
+            this.exitBrightnessContrastMode();
+        }
+
+        // Update undo/redo buttons
+        this.updateUndoRedoButtons();
+
+        // Update toolbar state
+        this.updateToolbarState();
     }
 
     renderPreview(pageData) {
@@ -877,6 +1125,9 @@ class ScoreSpacer {
         e.preventDefault();
         e.stopPropagation();
 
+        // Save state before drag begins
+        this.saveToHistory(this.currentPage);
+
         this.isDragging = true;
         this.dragSystemIndex = systemIndex;
         this.dragEdge = edge;
@@ -951,6 +1202,7 @@ class ScoreSpacer {
         const pageData = this.pageAnalysis[this.currentPage - 1];
         if (!pageData || index < 0 || index >= pageData.systems.length) return;
 
+        this.saveToHistory(this.currentPage);
         pageData.systems.splice(index, 1);
         this.showPageAnalysis(this.currentPage);
     }
@@ -959,6 +1211,7 @@ class ScoreSpacer {
         const pageData = this.pageAnalysis[this.currentPage - 1];
         if (!pageData || index < 0 || index >= pageData.systems.length) return;
 
+        this.saveToHistory(this.currentPage);
         const system = pageData.systems[index];
         const midPoint = Math.round((system.start + system.end) / 2);
 
@@ -975,6 +1228,7 @@ class ScoreSpacer {
         const pageData = this.pageAnalysis[this.currentPage - 1];
         if (!pageData) return;
 
+        this.saveToHistory(this.currentPage);
         const canvasHeight = pageData.canvas.height;
 
         // Find a gap to place the new system
@@ -1045,6 +1299,9 @@ class ScoreSpacer {
         if (wrapper) {
             wrapper.classList.add('rotation-mode');
         }
+
+        // Update toolbar state
+        this.updateToolbarState();
     }
 
     exitRotationMode() {
@@ -1284,6 +1541,9 @@ class ScoreSpacer {
         const pageData = this.pageAnalysis[this.currentPage - 1];
         if (!pageData) return;
 
+        // Save state before applying rotation
+        this.saveToHistory(this.currentPage);
+
         // Show loading state
         this.applyRotationBtn.disabled = true;
         this.applyRotationBtn.innerHTML = `<span class="loading"></span>${i18n.t('rotation.applying')}`;
@@ -1316,6 +1576,9 @@ class ScoreSpacer {
 
             // Refresh the preview
             this.showPageAnalysis(this.currentPage);
+
+            // Update thumbnail indicators
+            this.updateThumbnailIndicators(this.currentPage - 1);
 
         } catch (error) {
             console.error('Error applying rotation:', error);
@@ -1363,6 +1626,9 @@ class ScoreSpacer {
         }
 
         this.previewCrop();
+
+        // Update toolbar state
+        this.updateToolbarState();
     }
 
     exitCropMode() {
@@ -1592,6 +1858,9 @@ class ScoreSpacer {
         const pageData = this.pageAnalysis[this.currentPage - 1];
         if (!pageData) return;
 
+        // Save state before applying crop
+        this.saveToHistory(this.currentPage);
+
         // Show loading state
         this.applyCropBtn.disabled = true;
         this.applyCropBtn.innerHTML = `<span class="loading"></span>${i18n.t('crop.applying')}`;
@@ -1624,6 +1893,9 @@ class ScoreSpacer {
 
             // Refresh the preview
             this.showPageAnalysis(this.currentPage);
+
+            // Update thumbnail indicators
+            this.updateThumbnailIndicators(this.currentPage - 1);
 
         } catch (error) {
             console.error('Error applying crop:', error);
@@ -1746,6 +2018,20 @@ class ScoreSpacer {
         this.isCropMode = false;
         this.cropValues = { top: 0, bottom: 0, left: 0, right: 0 };
 
+        // Reset brightness/contrast state
+        this.isBrightnessContrastMode = false;
+        this.currentBrightness = 100;
+        this.currentContrast = 100;
+
+        // Clear undo/redo history
+        this.undoStacks = {};
+        this.redoStacks = {};
+
+        // Reset wizard
+        this.currentStep = 1;
+        this.completedSteps.clear();
+        this.updateWizardStep(1);
+
         this.uploadSection.classList.remove('hidden');
         this.pageSelectionSection.classList.add('hidden');
         this.processingSection.classList.add('hidden');
@@ -1755,8 +2041,10 @@ class ScoreSpacer {
         this.rotationPanel.classList.add('hidden');
         this.cropBtn.classList.add('hidden');
         this.cropPanel.classList.add('hidden');
-        this.generateBtn.disabled = true;
-        this.filenameGroup.classList.add('hidden');
+        this.brightnessContrastBtn.classList.add('hidden');
+        this.brightnessContrastPanel.classList.add('hidden');
+        this.exportSection.classList.add('hidden');
+        this.continueToExportBtn.classList.add('hidden');
         this.outputFilename.value = '';
 
         this.fileInput.value = '';
@@ -1766,6 +2054,548 @@ class ScoreSpacer {
                 <p>${i18n.t('preview.placeholder')}</p>
             </div>
         `;
+    }
+
+    // --- Undo/Redo Methods ---
+
+    saveToHistory(pageNum) {
+        const pageData = this.pageAnalysis[pageNum - 1];
+        if (!pageData) return;
+
+        // Initialize stacks for this page if needed
+        if (!this.undoStacks[pageNum]) {
+            this.undoStacks[pageNum] = [];
+        }
+
+        // Create a deep copy of the current state
+        const snapshot = {
+            systems: JSON.parse(JSON.stringify(pageData.systems)),
+            // Store canvas as data URL for full restoration capability
+            canvasDataUrl: pageData.canvas.toDataURL('image/png'),
+            canvasWidth: pageData.canvas.width,
+            canvasHeight: pageData.canvas.height
+        };
+
+        this.undoStacks[pageNum].push(snapshot);
+
+        // Clear redo stack when new action is performed
+        this.redoStacks[pageNum] = [];
+
+        // Limit history size
+        if (this.undoStacks[pageNum].length > this.maxHistorySize) {
+            this.undoStacks[pageNum].shift();
+        }
+
+        this.updateUndoRedoButtons();
+    }
+
+    canUndo() {
+        const stack = this.undoStacks[this.currentPage];
+        return stack && stack.length > 0;
+    }
+
+    canRedo() {
+        const stack = this.redoStacks[this.currentPage];
+        return stack && stack.length > 0;
+    }
+
+    updateUndoRedoButtons() {
+        if (this.undoBtn) {
+            this.undoBtn.disabled = !this.canUndo();
+        }
+        if (this.redoBtn) {
+            this.redoBtn.disabled = !this.canRedo();
+        }
+    }
+
+    async undo() {
+        if (!this.canUndo()) return;
+
+        const pageData = this.pageAnalysis[this.currentPage - 1];
+        if (!pageData) return;
+
+        // Save current state to redo stack
+        if (!this.redoStacks[this.currentPage]) {
+            this.redoStacks[this.currentPage] = [];
+        }
+        this.redoStacks[this.currentPage].push({
+            systems: JSON.parse(JSON.stringify(pageData.systems)),
+            canvasDataUrl: pageData.canvas.toDataURL('image/png'),
+            canvasWidth: pageData.canvas.width,
+            canvasHeight: pageData.canvas.height
+        });
+
+        // Restore previous state
+        const snapshot = this.undoStacks[this.currentPage].pop();
+        await this.restoreSnapshot(pageData, snapshot);
+
+        this.updateUndoRedoButtons();
+        this.showPageAnalysis(this.currentPage);
+    }
+
+    async redo() {
+        if (!this.canRedo()) return;
+
+        const pageData = this.pageAnalysis[this.currentPage - 1];
+        if (!pageData) return;
+
+        // Save current state to undo stack
+        if (!this.undoStacks[this.currentPage]) {
+            this.undoStacks[this.currentPage] = [];
+        }
+        this.undoStacks[this.currentPage].push({
+            systems: JSON.parse(JSON.stringify(pageData.systems)),
+            canvasDataUrl: pageData.canvas.toDataURL('image/png'),
+            canvasWidth: pageData.canvas.width,
+            canvasHeight: pageData.canvas.height
+        });
+
+        // Restore redo state
+        const snapshot = this.redoStacks[this.currentPage].pop();
+        await this.restoreSnapshot(pageData, snapshot);
+
+        this.updateUndoRedoButtons();
+        this.showPageAnalysis(this.currentPage);
+    }
+
+    async restoreSnapshot(pageData, snapshot) {
+        // Restore systems
+        pageData.systems = JSON.parse(JSON.stringify(snapshot.systems));
+
+        // Restore canvas from data URL
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = snapshot.canvasWidth;
+                canvas.height = snapshot.canvasHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                pageData.canvas = canvas;
+
+                // Re-calculate projection for the restored canvas
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const analysis = this.analyzer.analyze(imageData);
+                pageData.normalizedProjection = analysis.normalizedProjection;
+                pageData.normalizedMarginProjection = analysis.normalizedMarginProjection;
+
+                resolve();
+            };
+            img.src = snapshot.canvasDataUrl;
+        });
+    }
+
+    clearHistory(pageNum) {
+        this.undoStacks[pageNum] = [];
+        this.redoStacks[pageNum] = [];
+        this.updateUndoRedoButtons();
+    }
+
+    // --- Brightness/Contrast Methods ---
+
+    enterBrightnessContrastMode() {
+        if (!this.isAnalyzed) return;
+
+        const pageData = this.pageAnalysis[this.currentPage - 1];
+        if (!pageData || pageData.skipped) return;
+
+        // Exit other modes if active
+        if (this.isRotationMode) {
+            this.exitRotationMode();
+        }
+        if (this.isCropMode) {
+            this.exitCropMode();
+        }
+
+        this.isBrightnessContrastMode = true;
+        this.currentBrightness = 100;
+        this.currentContrast = 100;
+
+        // Store original canvas for preview
+        this.originalCanvas = document.createElement('canvas');
+        this.originalCanvas.width = pageData.canvas.width;
+        this.originalCanvas.height = pageData.canvas.height;
+        const ctx = this.originalCanvas.getContext('2d');
+        ctx.drawImage(pageData.canvas, 0, 0);
+
+        // Reset controls
+        this.brightnessSlider.value = 100;
+        this.brightnessInput.value = 100;
+        this.contrastSlider.value = 100;
+        this.contrastInput.value = 100;
+
+        // Show panel, hide buttons
+        this.brightnessContrastBtn.classList.add('hidden');
+        this.rotateBtn.classList.add('hidden');
+        this.cropBtn.classList.add('hidden');
+        this.brightnessContrastPanel.classList.remove('hidden');
+
+        // Add mode class to preview
+        const wrapper = this.previewContainer.querySelector('.preview-canvas-wrapper');
+        if (wrapper) {
+            wrapper.classList.add('brightness-contrast-mode');
+        }
+
+        // Update toolbar state
+        this.updateToolbarState();
+    }
+
+    exitBrightnessContrastMode() {
+        this.isBrightnessContrastMode = false;
+        this.currentBrightness = 100;
+        this.currentContrast = 100;
+        this.originalCanvas = null;
+
+        // Hide panel, show buttons
+        this.brightnessContrastPanel.classList.add('hidden');
+        this.brightnessContrastBtn.classList.remove('hidden');
+        this.rotateBtn.classList.remove('hidden');
+        this.cropBtn.classList.remove('hidden');
+
+        // Remove mode class
+        const wrapper = this.previewContainer.querySelector('.preview-canvas-wrapper');
+        if (wrapper) {
+            wrapper.classList.remove('brightness-contrast-mode');
+        }
+
+        // Restore original preview
+        this.showPageAnalysis(this.currentPage);
+    }
+
+    resetBrightnessContrast() {
+        this.brightnessSlider.value = 100;
+        this.brightnessInput.value = 100;
+        this.contrastSlider.value = 100;
+        this.contrastInput.value = 100;
+        this.currentBrightness = 100;
+        this.currentContrast = 100;
+        if (this.isBrightnessContrastMode) {
+            this.previewBrightnessContrast();
+        }
+    }
+
+    previewBrightnessContrast() {
+        if (!this.isBrightnessContrastMode || !this.originalCanvas) return;
+
+        this.currentBrightness = parseInt(this.brightnessSlider.value) || 100;
+        this.currentContrast = parseInt(this.contrastSlider.value) || 100;
+
+        const previewCanvas = this.previewContainer.querySelector('.preview-canvas');
+        if (!previewCanvas) return;
+
+        const ctx = previewCanvas.getContext('2d');
+        const maxWidth = this.previewContainer.clientWidth - 40;
+        const scale = Math.min(1, maxWidth / this.originalCanvas.width);
+
+        previewCanvas.width = this.originalCanvas.width * scale;
+        previewCanvas.height = this.originalCanvas.height * scale;
+
+        // Apply brightness/contrast filter
+        ctx.filter = `brightness(${this.currentBrightness}%) contrast(${this.currentContrast}%)`;
+        ctx.drawImage(this.originalCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
+        ctx.filter = 'none';
+
+        // Dim system overlays during preview
+        const wrapper = previewCanvas.parentElement;
+        if (wrapper) {
+            const overlays = wrapper.querySelectorAll('.system-overlay');
+            overlays.forEach(o => o.style.opacity = '0.3');
+        }
+    }
+
+    async applyBrightnessContrast() {
+        if (!this.isBrightnessContrastMode) {
+            this.exitBrightnessContrastMode();
+            return;
+        }
+
+        // Check if any change is applied
+        if (this.currentBrightness === 100 && this.currentContrast === 100) {
+            this.exitBrightnessContrastMode();
+            return;
+        }
+
+        const pageData = this.pageAnalysis[this.currentPage - 1];
+        if (!pageData) return;
+
+        // Save state before applying
+        this.saveToHistory(this.currentPage);
+
+        // Show loading state
+        this.applyBrightnessContrastBtn.disabled = true;
+        this.applyBrightnessContrastBtn.innerHTML = `<span class="loading"></span>${i18n.t('brightnessContrast.applying')}`;
+
+        try {
+            // Create new canvas with applied filter
+            const newCanvas = document.createElement('canvas');
+            newCanvas.width = this.originalCanvas.width;
+            newCanvas.height = this.originalCanvas.height;
+            const ctx = newCanvas.getContext('2d');
+
+            // Apply filter
+            ctx.filter = `brightness(${this.currentBrightness}%) contrast(${this.currentContrast}%)`;
+            ctx.drawImage(this.originalCanvas, 0, 0);
+            ctx.filter = 'none';
+
+            // Replace the page canvas
+            pageData.canvas = newCanvas;
+
+            // Re-analyze the page
+            const imageData = ctx.getImageData(0, 0, newCanvas.width, newCanvas.height);
+            const analysis = this.analyzer.analyze(imageData);
+
+            // Update page data with new analysis
+            Object.assign(pageData, analysis);
+
+            // Store the values for reference
+            pageData.brightness = this.currentBrightness;
+            pageData.contrast = this.currentContrast;
+
+            // Exit mode and refresh display
+            this.isBrightnessContrastMode = false;
+            this.originalCanvas = null;
+
+            this.brightnessContrastPanel.classList.add('hidden');
+            this.brightnessContrastBtn.classList.remove('hidden');
+            this.rotateBtn.classList.remove('hidden');
+            this.cropBtn.classList.remove('hidden');
+
+            // Refresh the preview
+            this.showPageAnalysis(this.currentPage);
+            this.updateThumbnailIndicators(this.currentPage - 1);
+            this.updateToolbarState();
+
+        } catch (error) {
+            console.error('Error applying brightness/contrast:', error);
+            alert(i18n.t('error.brightnessContrast') + ' ' + error.message);
+        } finally {
+            this.applyBrightnessContrastBtn.disabled = false;
+            this.applyBrightnessContrastBtn.textContent = i18n.t('brightnessContrast.apply');
+        }
+    }
+
+    // --- Wizard Methods ---
+
+    updateWizardStep(step) {
+        this.currentStep = step;
+
+        this.wizardSteps.forEach((stepEl, index) => {
+            const stepNum = index + 1;
+            stepEl.classList.remove('active', 'completed');
+
+            if (stepNum === step) {
+                stepEl.classList.add('active');
+            } else if (this.completedSteps.has(stepNum)) {
+                stepEl.classList.add('completed');
+            }
+        });
+
+        // Update connectors
+        this.wizardConnectors.forEach((conn, index) => {
+            conn.classList.toggle('completed', this.completedSteps.has(index + 1));
+        });
+    }
+
+    navigateToStep(step) {
+        switch (step) {
+            case 1:
+                this.reset();
+                break;
+            case 2:
+                if (this.pdfHandler.getPageCount() > 0) {
+                    this.showPageSelectionSection();
+                }
+                break;
+            case 3:
+                if (this.pageSettings.length > 0) {
+                    this.showProcessingSection();
+                }
+                break;
+            case 4:
+                if (this.isAnalyzed) {
+                    this.showExportSection();
+                }
+                break;
+        }
+    }
+
+    // --- Contextual Toolbar Methods ---
+
+    updateToolbarState() {
+        const pageData = this.pageAnalysis[this.currentPage - 1];
+        const isPageAnalyzed = this.isAnalyzed && pageData && !pageData.skipped;
+
+        // Enable/disable toolbar buttons
+        this.toolbarRotate.disabled = !isPageAnalyzed;
+        this.toolbarCrop.disabled = !isPageAnalyzed;
+        this.toolbarBrightness.disabled = !isPageAnalyzed;
+        this.toolbarAddSystem.disabled = !isPageAnalyzed;
+
+        // Update active states for modes
+        this.toolbarRotate.classList.toggle('active', this.isRotationMode);
+        this.toolbarCrop.classList.toggle('active', this.isCropMode);
+        this.toolbarBrightness.classList.toggle('active', this.isBrightnessContrastMode);
+
+        // Undo/Redo
+        this.toolbarUndo.disabled = !this.canUndo();
+        this.toolbarRedo.disabled = !this.canRedo();
+    }
+
+    // --- Thumbnail Indicator Methods ---
+
+    updateThumbnailIndicators(pageIndex) {
+        const pageData = this.pageAnalysis[pageIndex];
+        if (!pageData) return;
+
+        const thumbnail = this.pageThumbnails.querySelector(`[data-index="${pageIndex}"]`);
+        if (!thumbnail) return;
+
+        // Update transforms badges
+        const transforms = thumbnail.querySelector('.page-thumbnail-transforms');
+        if (transforms) {
+            const rotateBadge = transforms.querySelector('.transform-rotate');
+            const cropBadge = transforms.querySelector('.transform-crop');
+            const brightnessBadge = transforms.querySelector('.transform-brightness');
+
+            const hasRotation = pageData.rotation && pageData.rotation !== 0;
+            const hasCrop = pageData.crop && (pageData.crop.top || pageData.crop.bottom || pageData.crop.left || pageData.crop.right);
+            const hasBrightness = (pageData.brightness && pageData.brightness !== 100) ||
+                (pageData.contrast && pageData.contrast !== 100);
+
+            rotateBadge.classList.toggle('hidden', !hasRotation);
+            cropBadge.classList.toggle('hidden', !hasCrop);
+            brightnessBadge.classList.toggle('hidden', !hasBrightness);
+            transforms.classList.toggle('hidden', !hasRotation && !hasCrop && !hasBrightness);
+        }
+
+        // Update system count
+        const systemsContainer = thumbnail.querySelector('.page-thumbnail-systems');
+        if (systemsContainer) {
+            const systemsCount = systemsContainer.querySelector('.systems-count');
+
+            if (pageData.systems && pageData.systems.length > 0 && !pageData.skipped) {
+                const count = pageData.systems.length;
+                const key = count === 1 ? 'thumbnail.systemsCountSingular' : 'thumbnail.systemsCount';
+                systemsCount.textContent = i18n.t(key, { count });
+                systemsContainer.classList.remove('hidden');
+            } else {
+                systemsContainer.classList.add('hidden');
+            }
+        }
+    }
+
+    updateAllThumbnailIndicators() {
+        for (let i = 0; i < this.pageAnalysis.length; i++) {
+            this.updateThumbnailIndicators(i);
+        }
+    }
+
+    // --- Export Preview Methods ---
+
+    renderExportPreview() {
+        if (!this.isAnalyzed || !this.exportPreviewContainer) return;
+
+        // Collect all systems from all pages
+        const allSystems = [];
+        for (const pageData of this.pageAnalysis) {
+            if (pageData && pageData.systems && pageData.systems.length > 0 && !pageData.skipped) {
+                for (const system of pageData.systems) {
+                    allSystems.push({ system, canvas: pageData.canvas });
+                }
+            }
+        }
+
+        if (allSystems.length === 0) {
+            this.exportPreviewContainer.innerHTML = `<p style="padding: 2rem; text-align: center; color: var(--text-secondary);">${i18n.t('export.noSystems')}</p>`;
+            return;
+        }
+
+        const spacing = parseInt(this.spacingInput.value) || 150;
+
+        // DIN A4 dimensions in points (595.28 x 841.89)
+        const A4_WIDTH = 595.28;
+        const A4_HEIGHT = 841.89;
+        const MARGIN = 40; // Same as pdfGenerator
+        const usableWidth = A4_WIDTH - (MARGIN * 2);
+        const usableHeight = A4_HEIGHT - (MARGIN * 2);
+
+        // Preview scale (fit A4 to ~300px width)
+        const previewScale = 300 / A4_WIDTH;
+        const previewHeight = A4_HEIGHT * previewScale;
+        const previewMargin = MARGIN * previewScale;
+        const previewUsableWidth = usableWidth * previewScale;
+
+        // Create preview canvas
+        const previewCanvas = document.createElement('canvas');
+        previewCanvas.width = 300;
+        previewCanvas.height = previewHeight;
+        previewCanvas.className = 'export-preview-canvas';
+        const ctx = previewCanvas.getContext('2d');
+
+        // White background
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+        // Draw systems
+        let currentY = previewMargin;
+        let systemsDrawn = 0;
+        const maxSystemsToShow = 10; // Limit for performance
+
+        for (let i = 0; i < Math.min(allSystems.length, maxSystemsToShow); i++) {
+            const { system, canvas } = allSystems[i];
+            const systemHeight = system.end - system.start;
+
+            // Scale system to fit usable width
+            const systemScale = usableWidth / canvas.width;
+            const scaledHeight = systemHeight * systemScale * previewScale;
+            const spacingScaled = spacing * systemScale * previewScale;
+
+            // Check if system fits on current page
+            if (currentY + scaledHeight > previewHeight - previewMargin) {
+                break; // Stop if no more space
+            }
+
+            // Draw system
+            ctx.drawImage(
+                canvas,
+                0, system.start, canvas.width, systemHeight,
+                previewMargin, currentY, previewUsableWidth, scaledHeight
+            );
+
+            currentY += scaledHeight;
+            systemsDrawn++;
+
+            // Add spacing (visual indicator)
+            if (i < Math.min(allSystems.length, maxSystemsToShow) - 1 && currentY + spacingScaled < previewHeight - previewMargin) {
+                // Draw spacing indicator
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+                ctx.fillRect(previewMargin, currentY, previewUsableWidth, spacingScaled);
+
+                // Center line
+                ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
+                ctx.setLineDash([2, 2]);
+                ctx.beginPath();
+                ctx.moveTo(previewMargin + previewUsableWidth / 2 - 15, currentY + spacingScaled / 2);
+                ctx.lineTo(previewMargin + previewUsableWidth / 2 + 15, currentY + spacingScaled / 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                currentY += spacingScaled;
+            }
+        }
+
+        // Clear container and add canvas
+        this.exportPreviewContainer.innerHTML = '';
+        this.exportPreviewContainer.appendChild(previewCanvas);
+
+        // Add info about remaining systems
+        if (allSystems.length > systemsDrawn) {
+            const moreCount = allSystems.length - systemsDrawn;
+            const moreDiv = document.createElement('div');
+            moreDiv.className = 'export-preview-more';
+            moreDiv.textContent = i18n.t('export.moreSystems', { count: moreCount });
+            this.exportPreviewContainer.appendChild(moreDiv);
+        }
     }
 }
 
