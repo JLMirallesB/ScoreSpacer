@@ -2290,10 +2290,35 @@ class ScoreSpacer {
         previewCanvas.width = this.originalCanvas.width * scale;
         previewCanvas.height = this.originalCanvas.height * scale;
 
-        // Apply brightness/contrast filter
-        ctx.filter = `brightness(${this.currentBrightness}%) contrast(${this.currentContrast}%)`;
+        // Draw original image first
         ctx.drawImage(this.originalCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
-        ctx.filter = 'none';
+
+        // Apply brightness/contrast manually (more compatible than ctx.filter)
+        if (this.currentBrightness !== 100 || this.currentContrast !== 100) {
+            const imageData = ctx.getImageData(0, 0, previewCanvas.width, previewCanvas.height);
+            const data = imageData.data;
+            const brightness = (this.currentBrightness - 100) * 2.55; // Convert to -127.5 to +127.5
+            const contrast = this.currentContrast / 100;
+            const factor = (259 * (contrast * 255 + 255)) / (255 * (259 - contrast * 255));
+
+            for (let i = 0; i < data.length; i += 4) {
+                // Apply brightness
+                let r = data[i] + brightness;
+                let g = data[i + 1] + brightness;
+                let b = data[i + 2] + brightness;
+
+                // Apply contrast
+                r = factor * (r - 128) + 128;
+                g = factor * (g - 128) + 128;
+                b = factor * (b - 128) + 128;
+
+                // Clamp values
+                data[i] = Math.max(0, Math.min(255, r));
+                data[i + 1] = Math.max(0, Math.min(255, g));
+                data[i + 2] = Math.max(0, Math.min(255, b));
+            }
+            ctx.putImageData(imageData, 0, 0);
+        }
 
         // Dim system overlays during preview
         const wrapper = previewCanvas.parentElement;
@@ -2332,10 +2357,30 @@ class ScoreSpacer {
             newCanvas.height = this.originalCanvas.height;
             const ctx = newCanvas.getContext('2d');
 
-            // Apply filter
-            ctx.filter = `brightness(${this.currentBrightness}%) contrast(${this.currentContrast}%)`;
+            // Draw original first
             ctx.drawImage(this.originalCanvas, 0, 0);
-            ctx.filter = 'none';
+
+            // Apply brightness/contrast manually (more compatible than ctx.filter)
+            const adjustmentData = ctx.getImageData(0, 0, newCanvas.width, newCanvas.height);
+            const data = adjustmentData.data;
+            const brightness = (this.currentBrightness - 100) * 2.55;
+            const contrast = this.currentContrast / 100;
+            const factor = (259 * (contrast * 255 + 255)) / (255 * (259 - contrast * 255));
+
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i] + brightness;
+                let g = data[i + 1] + brightness;
+                let b = data[i + 2] + brightness;
+
+                r = factor * (r - 128) + 128;
+                g = factor * (g - 128) + 128;
+                b = factor * (b - 128) + 128;
+
+                data[i] = Math.max(0, Math.min(255, r));
+                data[i + 1] = Math.max(0, Math.min(255, g));
+                data[i + 2] = Math.max(0, Math.min(255, b));
+            }
+            ctx.putImageData(adjustmentData, 0, 0);
 
             // Replace the page canvas
             pageData.canvas = newCanvas;
