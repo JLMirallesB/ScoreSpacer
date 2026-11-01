@@ -3,7 +3,11 @@
  */
 
 // Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/6.4.299/pdf.worker.min.mjs';
+// Decodificadores WebAssembly para imágenes escaneadas (CCITT/JBIG2, JPEG 2000).
+// Sin ellos pdf.js 5+ deja en blanco las partituras escaneadas. cdnjs no los publica:
+// se sirven desde jsDelivr con la versión exacta, igual que la del worker.
+const PDFJS_WASM_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.4.299/wasm/';
 
 export class PDFHandler {
     constructor() {
@@ -22,7 +26,7 @@ export class PDFHandler {
         const arrayBuffer = await file.arrayBuffer();
         this.pdfBytes = new Uint8Array(arrayBuffer);
 
-        const loadingTask = pdfjsLib.getDocument({ data: this.pdfBytes });
+        const loadingTask = pdfjsLib.getDocument({ data: this.pdfBytes, wasmUrl: PDFJS_WASM_URL });
         this.pdfDoc = await loadingTask.promise;
         this.pageCount = this.pdfDoc.numPages;
         this.pageCache.clear();
