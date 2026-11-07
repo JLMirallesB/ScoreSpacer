@@ -161,6 +161,8 @@ const translations = {
         'footer.createdBy': 'Creado por',
         'footer.withHelpOf': 'con ayuda de',
         'footer.support': 'Invítame a una horchata',
+        'footer.moreInfo': 'Más información sobre este proyecto',
+        'footer.license': 'Código bajo licencia <a href="https://www.gnu.org/licenses/agpl-3.0.html" rel="license" target="_blank">AGPL v3</a> · contenidos bajo <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" rel="license" target="_blank">CC BY-SA 4.0</a> · <a href="https://github.com/JLMirallesB/ScoreSpacer" target="_blank" rel="noopener">código fuente</a>',
 
         // Donation modal
         'donation.title': '¡Gracias por usar ScoreSpacer!',
@@ -377,6 +379,8 @@ const translations = {
         'footer.createdBy': 'Creat per',
         'footer.withHelpOf': "amb l'ajuda de",
         'footer.support': "Convida'm a una orxata",
+        'footer.moreInfo': 'Més informació sobre aquest projecte',
+        'footer.license': 'Codi amb llicència <a href="https://www.gnu.org/licenses/agpl-3.0.html" rel="license" target="_blank">AGPL v3</a> · continguts amb llicència <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ca" rel="license" target="_blank">CC BY-SA 4.0</a> · <a href="https://github.com/JLMirallesB/ScoreSpacer" target="_blank" rel="noopener">codi font</a>',
 
         // Donation modal
         'donation.title': 'Gràcies per utilitzar ScoreSpacer!',
@@ -593,6 +597,8 @@ const translations = {
         'footer.createdBy': 'Created by',
         'footer.withHelpOf': 'with help from',
         'footer.support': 'Buy me a horchata',
+        'footer.moreInfo': 'More about this project',
+        'footer.license': 'Code licensed under <a href="https://www.gnu.org/licenses/agpl-3.0.html" rel="license" target="_blank">AGPL v3</a> · content under <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en" rel="license" target="_blank">CC BY-SA 4.0</a> · <a href="https://github.com/JLMirallesB/ScoreSpacer" target="_blank" rel="noopener">source code</a>',
 
         // Donation modal
         'donation.title': 'Thank you for using ScoreSpacer!',

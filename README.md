@@ -74,11 +74,23 @@ Al utilizar esta aplicación, el usuario declara y garantiza que:
 
 ## Autor
 
-Creado por [José Luis Miralles Bono](https://www.jlmirall.es) con ayuda de [Claude](https://claude.ai).
+Creado por [José Luis Miralles Bono](https://jlmirall.es) con ayuda de [Claude](https://claude.ai) · joseluismirallesbono@gmail.com
+
+Más información: [ScoreSpacer: controla el espacio entre pentagramas](https://elpulpoenelvaso.jlmirall.es/?p=534)
 
 ## Apoyo
 
 Si esta herramienta te resulta útil, considera [invitarme a una horchata](https://ko-fi.com/miralles).
+
+## Licencia
+
+© 2026 José Luis Miralles Bono ([jlmirall.es](https://jlmirall.es)) · joseluismirallesbono@gmail.com
+
+- **Código:** [GNU AGPL v3](LICENSE). Puedes usarlo, estudiarlo, modificarlo y redistribuirlo, también con
+  fines comerciales, siempre que lo que derives se publique con la misma licencia y con su código fuente
+  disponible, también si lo ofreces como servicio web.
+- **Contenidos** (textos, ayudas e imágenes): [CC BY-SA 4.0](LICENSE-CONTENIDOS). Puedes compartirlos
+  y adaptarlos citando la autoría y publicando lo que derives con esta misma licencia.
 
 ---
 

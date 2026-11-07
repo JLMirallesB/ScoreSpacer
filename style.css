@@ -2127,3 +2127,8 @@ footer {
     font-weight: 600;
     white-space: nowrap;
 }
+
+.footer-licencia {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
